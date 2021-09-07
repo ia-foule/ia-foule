@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  backend:
+    volumes:
+      - ./backend:/${APP}/backend/
+      - ./tests:/${APP}/tests/
+      - ./models:/${APP}/models/
+      - ./setup.py:/${APP}/setup.py
+    ports:
+      - ${APP_PORT}:${APP_PORT}
