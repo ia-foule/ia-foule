@@ -1,0 +1,10 @@
+__pycache__
+.mypy_cache
+*.pb
+*.weights
+dist
+*.egg*
+venv
+models/ssd_mobilenet/*
+ssd_mobilenet.tar.gz
+*.pyc
