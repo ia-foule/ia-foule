@@ -6,5 +6,7 @@ dist
 *.egg*
 venv
 models/ssd_mobilenet/*
+!models/ssd_mobilenet/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+!models/ssd_mobilenet/labels.json
 ssd_mobilenet.tar.gz
 *.pyc
