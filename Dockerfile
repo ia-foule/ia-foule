@@ -15,6 +15,7 @@ VOLUME /${APP_PATH}/backend
 VOLUME /${APP_PATH}/tests
 VOLUME /${APP_PATH}/models
 VOLUME /${APP_PATH}/imgs
+VOLUME /${APP_PATH}/dist
 
 RUN pip3 install --upgrade pip setuptools wheel && pip3 install --no-cache-dir  -r requirements.txt && pip3 install -e .
 
@@ -35,6 +36,7 @@ ADD backend ./backend
 ADD tests ./tests
 ADD models ./models
 ADD imgs ./imgs
+ADD dist ./dist
 
 COPY requirements.txt ./
 COPY setup.py ./
