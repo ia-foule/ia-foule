@@ -1,0 +1,21 @@
+---
+name: Python application
+
+on: [push]
+
+jobs:
+  build:
+    name: Python test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: make up down
+      - name: Run tests
+        run: make test

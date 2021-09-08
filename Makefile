@@ -31,5 +31,8 @@ up: models/ssd_mobilenet/frozen_inference_graph.pb
 	@echo "Listening on port: $(APP_PORT)"
 	@export EXEC_ENV=prod; $(COMPOSE) up -d
 
+test:
+	$(COMPOSE) run --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/'
+
 down:
 	@$(COMPOSE) down
