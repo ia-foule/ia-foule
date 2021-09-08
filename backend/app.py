@@ -11,8 +11,8 @@ from itertools import islice
 from datetime import datetime
 from multiprocessing import Process
 from flask import Flask, Response, send_from_directory, request, Blueprint, abort
-from .utils import (reduce_year, reduce_year_month, reduce_month,
-        reduce_day, reduce_year, reduce_hour, reduce_object, reduce_tracking,
+from backend.utils import (reduce_year, reduce_year_month, reduce_month,
+        reduce_day, reduce_year, reduce_hour, reduce_object,
         img_to_base64)
 from .camera import Camera
 
@@ -184,7 +184,6 @@ def api_images():
 @blueprint_api.route('/api/single_image')
 def single_image():
     detection = request.args.get('detection', 'false')
-    tracking = request.args.get('tracking', 'false')
     frame = None
     frame = cameras.get_frame()
     if detection == 'true':
@@ -202,8 +201,7 @@ myconditions = dict(
         days=reduce_day,
         year_month=reduce_year_month,
         hours=reduce_hour,
-        detected_objects=reduce_object,
-        tracking_objects=reduce_tracking,
+        detected_objects=reduce_object
         )
 
 

@@ -15,7 +15,7 @@ VOLUME /${APP_PATH}/backend
 VOLUME /${APP_PATH}/tests
 VOLUME /${APP_PATH}/models
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade pip setuptools wheel && pip3 install --no-cache-dir  -r requirements.txt
 
 # Expose the listening port of your app
 EXPOSE ${APP_PORT}
