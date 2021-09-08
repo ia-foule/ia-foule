@@ -10,3 +10,5 @@ models/ssd_mobilenet/*
 !models/ssd_mobilenet/labels.json
 ssd_mobilenet.tar.gz
 *.pyc
+imgs/outputcv.jpg
+artifacts
