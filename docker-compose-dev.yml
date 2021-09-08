@@ -6,6 +6,7 @@ services:
       - ./backend:/${APP}/backend/
       - ./tests:/${APP}/tests/
       - ./models:/${APP}/models/
+      - ./imgs:/${APP}/imgs/
       - ./setup.py:/${APP}/setup.py
     ports:
       - ${APP_PORT}:${APP_PORT}
