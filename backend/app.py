@@ -40,7 +40,7 @@ app = Flask(__name__)
 # static html
 blueprint_html = Blueprint('html', __name__)
 
-@blueprint_html.route('/', defaults={'filename': 'index.html'})
+@blueprint_html.route('/', defaults={'filename': 'index_opencv.html'})
 @blueprint_html.route('/<path:filename>')
 def show_pages(filename):
     return send_from_directory('../dist', filename)

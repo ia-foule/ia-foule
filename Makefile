@@ -23,9 +23,9 @@ models/ssd_mobilenet/frozen_inference_graph.pb: models/ssd_mobilenet
 	tar xvzf ssd_mobilenet.tar.gz -C models/ssd_mobilenet --strip-components=1
 	rm -rf ssd_mobilenet.tar.gz
 
-dev: models/ssd_mobilenet/frozen_inference_graph.pb
+dev: 
 	@echo "Listening on port: $(APP_PORT)"
-	@export EXEC_ENV=dev; $(COMPOSE) -f docker-compose-dev.yml up --build 
+	@export EXEC_ENV=dev; $(COMPOSE) -f docker-compose-dev.yml up --build
 
 up: models/ssd_mobilenet/frozen_inference_graph.pb
 	@echo "Listening on port: $(APP_PORT)"

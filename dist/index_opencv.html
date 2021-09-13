@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hello OpenCV.js</title>
+</head>
+<body>
+<h2>Hello OpenCV.js</h2>
+<p id="status">OpenCV.js is loading...</p>
+<div>
+  <div class="inputoutput">
+    <img id="imageSrc" alt="No Image" />
+    <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+  </div>
+  <div class="inputoutput">
+    <canvas id="canvasOutput" ></canvas>
+    <div class="caption">canvasOutput</div>
+    <div id="output"></div>
+
+  </div>
+
+</div>
+<script type="text/javascript">
+let imgElement = document.getElementById('imageSrc');
+let inputElement = document.getElementById('fileInput');
+let outputElement = document.getElementById('output');
+
+inputElement.addEventListener('change', (e) => {
+  imgElement.src = URL.createObjectURL(e.target.files[0]);
+}, false);
+
+
+imgElement.onload = async function() {
+  let mat = cv.imread(imgElement);
+  let grayMat = new cv.Mat();
+  let dst = new cv.Mat();
+  let input = new cv.Mat();
+  let dsize = new cv.Size(1024,768);
+  // You can try more different parameters
+  cv.cvtColor(mat, grayMat, cv.COLOR_RGBA2GRAY, 0);
+  cv.resize(grayMat, dst, dsize, 0, 0, cv.INTER_AREA);
+  cv.transpose(dst, input);
+
+  cv.imshow('canvasOutput', dst);
+  console.log(dst.data)
+  const Sessoption = createSessionOptions();
+  console.log(Sessoption)
+  const session = await ort.InferenceSession.create('./mcnn_shtechB_186v7_ri.onnx', Sessoption);
+  const inputNames = session.inputNames;
+  const outputNames = session.outputNames;
+  console.log(inputNames, outputNames)
+  const buffer01 = new Float32Array(dst.data)
+
+  mat.delete();grayMat.delete();dst.delete();input.delete();
+
+  const tensorA = new ort.Tensor('float32', buffer01, [1,1,768,1024]);
+
+  // prepare feeds. use model input names as keys.
+  const feeds = { input: tensorA };
+  // feed inputs and run
+  console.log('start infer')
+  const Runoption = createRunOptions();
+  console.log(Runoption)
+  const results = await session.run(feeds, Runoption);
+  const reducer = (previousValue, currentValue) => previousValue + currentValue;
+
+  const nbPerson = results.output.data.reduce(reducer, 0)
+  console.log(nbPerson)
+  outputElement.innerHTML = parseInt(nbPerson)
+
+
+};
+function onOpenCvReady() {
+  document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+}
+
+function createSessionOptions() {
+    // run options: please refer to the other example for details usage for run options
+
+    // specify log verbose to this inference run
+    return { logSeverityLevel: 0, intraOpNumThreads: 4,enableMemPattern:true, enableCpuMemArena: true, enableProfiling: false, executionMode:'parallel'};
+  }
+function createRunOptions() {
+    // run options: please refer to the other example for details usage for run options
+
+    // specify log verbose to this inference run
+    return { logSeverityLevel: 0, logVerbosityLevel: 4};
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+<script async src="https://docs.opencv.org/3.4.0/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</body>
+</html>
