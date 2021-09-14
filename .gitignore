@@ -4,6 +4,7 @@ __pycache__
 *.weights
 dist/*
 !dist/index.html
+!dist/index_image.html
 *.egg*
 venv
 models/ssd_mobilenet/*
