@@ -20,7 +20,8 @@ from .camera import Camera
 WIDTH = 320
 HEIGHT = 240
 IMAGE_FOLDER = 'imgs'
-RTSP_ADDR = os.getenv('RTSP_ADDR')
+#RTSP_ADDR = os.getenv('RTSP_ADDR')
+RTSP_ADDR = 0
 if os.getenv('PORT'):
     PORT = int(str(os.getenv('PORT')))
 else:
