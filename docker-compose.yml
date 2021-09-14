@@ -20,3 +20,5 @@ services:
      - no_proxy=${no_proxy}
      - APP_PORT=${APP_PORT}
      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    devices:
+      - "/dev/video0:/dev/video0"
