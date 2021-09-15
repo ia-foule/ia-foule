@@ -3,10 +3,10 @@ version: '3.4'
 services:
   backend:
     volumes:
-      - ./backend:/${APP}/backend/
-      - ./tests:/${APP}/tests/
-      - ./models:/${APP}/models/
-      - ./imgs:/${APP}/imgs/
-      - ./setup.py:/${APP}/setup.py
+      - ./app:/app/
+      - ./tests:/tests/
+      - ./models:/models/
+      - ./imgs:/imgs/
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - "7000:80"
+    command: ${COMMAND_PARAMS}

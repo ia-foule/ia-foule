@@ -93,6 +93,20 @@ class Camera(BaseCamera):
             self.CaptureContinous()
             time.sleep(interval)
 
+    def generate(self):
+        while True: # wait until
+            image = self.get_frame()
+            if image is None:
+                continue
+            # encode the frame in JPEG format
+            (flag, encodedImage) = cv2.imencode(".jpg", image)
+            # ensure the frame was successfully encoded
+            if not flag:
+                continue
+            # yield the output frame in the byte format
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                    bytearray(encodedImage) + b'\r\n')
+
 if __name__ == '__main__':
     pass
     #camera = Camera()

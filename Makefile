@@ -8,31 +8,40 @@ export APP_PORT = 5000
 # buffered logs do not shows in realtime
 export PYTHONUNBUFFERED=1
 export PYTHONDONTWRITEBYTECODE=1
-
+export DC_NETWORK=ia-foule
 # compose command to merge production file and and dev/tools overrides
 export COMPOSE?=docker-compose -f docker-compose.yml
 
 dummy		    := $(shell touch artifacts)
 include ./artifacts
 
-models/ssd_mobilenet:
-	mkdir -p models/ssd_mobilenet/
+#############
+#  Network  #
+#############
 
-models/ssd_mobilenet/frozen_inference_graph.pb: models/ssd_mobilenet
-	curl -o ssd_mobilenet.tar.gz http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
-	tar xvzf ssd_mobilenet.tar.gz -C models/ssd_mobilenet --strip-components=1
-	rm -rf ssd_mobilenet.tar.gz
+network-stop:
+	docker network rm ${DC_NETWORK}
 
-dev: models/ssd_mobilenet/frozen_inference_graph.pb
+network:
+	@docker network create ${DC_NETWORK} 2> /dev/null; true
+
+models/mmcn:
+	mkdir -p models/mmcn/
+	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/mcnn_shtechB_186v7_ri.onnx
+
+dev: models/mmcn
 	@echo "Listening on port: $(APP_PORT)"
-	@export EXEC_ENV=dev; $(COMPOSE) -f docker-compose-dev.yml up --build 
+	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose-dev.yml up #--build
 
-up: models/ssd_mobilenet/frozen_inference_graph.pb
+up: models/mmcn
 	@echo "Listening on port: $(APP_PORT)"
-	@export EXEC_ENV=prod; $(COMPOSE) up -d
+	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) up -d
 
 test:
 	$(COMPOSE) run --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/'
+
+exec:
+	$(COMPOSE) exec  backend bash
 
 down:
 	@$(COMPOSE) down
