@@ -17,8 +17,3 @@ services:
      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
      - RTSP_ADDR=${RTSP_ADDR}
     command: ${COMMAND_PARAMS}
-
-networks:
-  default:
-    external:
-      name: ${DC_NETWORK}

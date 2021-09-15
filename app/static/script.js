@@ -1,4 +1,4 @@
-const IMAGE_INTERVAL_MS = 42;
+const IMAGE_INTERVAL_MS = 10000;
 
 const drawFaceRectangles = (video, canvas, faces) => {
   const ctx = canvas.getContext('2d');
