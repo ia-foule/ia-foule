@@ -19,7 +19,7 @@ async def receive(websocket: WebSocket, queue: asyncio.Queue):
     bytes = await websocket.receive_bytes()
     try:
         queue.put_nowait(bytes)
-        print('put bytes in queue')
+        #print('put bytes in queue')
     except asyncio.QueueFull:
         #print('the queue is full')
         pass
@@ -34,7 +34,7 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = cascade_classifier.detectMultiScale(gray)
         print("process bytes")
-        await asyncio.sleep(5)
+        #await asyncio.sleep(5)
         if len(faces) > 0:
             faces_output = Faces(faces=faces.tolist())
         else:
