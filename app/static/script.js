@@ -1,5 +1,5 @@
-const IMAGE_INTERVAL_MS = 10000;
-
+const IMAGE_INTERVAL_MS = 1000;
+const output = ''
 const drawFaceRectangles = (video, canvas, faces) => {
   const ctx = canvas.getContext('2d');
 
@@ -16,61 +16,40 @@ const drawFaceRectangles = (video, canvas, faces) => {
   }
 };
 
-const startFaceDetection = (video, canvas, deviceId) => {
+const startFaceDetection = (img, canvas, deviceId) => {
   const socket = new WebSocket('ws://localhost:7000/face-detection');
   let intervalId;
 
   // Connection opened
   socket.addEventListener('open', function () {
 
-    // Start reading video from device
-    navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        deviceId,
-        width: { max: 640 },
-        height: { max: 480 },
-      },
-    }).then(function (stream) {
-      video.srcObject = stream;
-      video.play().then(() => {
-        // Adapt overlay canvas size to the video size
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
+    console.log("ws open");
         // Send an image in the WebSocket every 42 ms
-        intervalId = setInterval(() => {
-
-          // Create a virtual canvas to draw current video image
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          ctx.drawImage(video, 0, 0);
-
-          // Convert it to JPEG and send it to the WebSocket
-          canvas.toBlob((blob) => socket.send(blob), 'image/jpeg');
-        }, IMAGE_INTERVAL_MS);
-      });
+    intervalId = setInterval(() => {
+      // Convert it to JPEG and send it to the WebSocket
+      //console.log("ask for new frame in frontend!");
+       socket.send("frame");
+    }, IMAGE_INTERVAL_MS);
     });
-  });
 
   // Listen for messages
   socket.addEventListener('message', function (event) {
-    drawFaceRectangles(video, canvas, JSON.parse(event.data));
+    console.log('ws message')
+    const img = document.getElementById( "photo" );
+    img.src = URL.createObjectURL( event.data );
   });
+
 
   // Stop the interval and video reading on close
   socket.addEventListener('close', function () {
     window.clearInterval(intervalId);
-    video.pause();
   });
 
   return socket;
 };
 
 window.addEventListener('DOMContentLoaded', (event) => {
-  const video = document.getElementById('video');
+  const img = document.getElementById( "photo" );
   const canvas = document.getElementById('canvas');
   const cameraSelect = document.getElementById('camera-select');
   let socket;
@@ -90,6 +69,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
   // Start face detection on the selected camera on submit
   document.getElementById('form-connect').addEventListener('submit', (event) => {
+    console.log('ws submit')
     event.preventDefault();
 
     // Close previous socket is there is one
@@ -98,7 +78,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     }
 
     const deviceId = cameraSelect.selectedOptions[0].value;
-    socket = startFaceDetection(video, canvas, deviceId);
+    socket = startFaceDetection(img, canvas, deviceId);
   });
 
 });

@@ -24,7 +24,7 @@ models/mmcn:
 
 dev: models/mmcn
 	@echo "Listening on port: $(APP_PORT)"
-	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose-dev.yml up --build
+	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose-dev.yml up #--build
 
 up: models/mmcn
 	@echo "Listening on port: $(APP_PORT)"
