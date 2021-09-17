@@ -1,11 +1,9 @@
-const IMAGE_INTERVAL_MS = 1000;
-const output = ''
-const drawFaceRectangles = (video, canvas, faces) => {
+const IMAGE_INTERVAL_MS = 84; // Asks for 12 frames per seconds
+
+const drawFaceRectangles = (img, canvas, faces) => {
   const ctx = canvas.getContext('2d');
-
-  ctx.width = video.videoWidth;
-  ctx.height = video.videoHeight;
-
+  ctx.width = img.width;
+  ctx.height = img.height;
   ctx.beginPath();
   ctx.clearRect(0, 0, ctx.width, ctx.height);
   for (const [x, y, width, height] of faces.faces) {
@@ -18,6 +16,7 @@ const drawFaceRectangles = (video, canvas, faces) => {
 
 const startFaceDetection = (img, canvas, deviceId) => {
   const socket = new WebSocket('ws://localhost:7000/face-detection');
+  //socket.binaryType = 'arraybuffer';
   let intervalId;
 
   // Connection opened
@@ -36,7 +35,18 @@ const startFaceDetection = (img, canvas, deviceId) => {
   socket.addEventListener('message', function (event) {
     console.log('ws message')
     const img = document.getElementById( "photo" );
-    img.src = URL.createObjectURL( event.data );
+    const canvas = document.getElementById('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    if (event.data instanceof Blob) {
+      img.src = URL.createObjectURL( event.data ) ;
+      URL.revokeObjectURL(event.data)
+      //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
+    } else {
+        // json frame
+        img.onload = drawFaceRectangles(img, canvas, JSON.parse(event.data));
+    }
   });
 
 

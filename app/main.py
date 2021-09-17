@@ -6,21 +6,18 @@ import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-import time, sys
-from fastapi.logger import logger
+import time, sys, os
 
+from fastapi.logger import logger as fastapi_logger
 import logging
 
-# Get gunicorn logging level
-gunicorn_logger = logging.getLogger('gunicorn.error')
-logger.handlers = gunicorn_logger.handlers
-if __name__ != "main":
-    logger.setLevel(gunicorn_logger.level)
-else:
-    logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static",html = True), name="static")
+
+logger = logging.getLogger("gunicorn.error")
+fastapi_logger.handlers = logger.handlers
+fastapi_logger.setLevel(logger.level)
 
 cascade_classifier = cv2.CascadeClassifier()
 
@@ -32,20 +29,20 @@ camera = cv2.VideoCapture(0)
 async def receive(websocket: WebSocket, queue: asyncio.Queue):
     ws_text = await websocket.receive_text()
     if ws_text == "frame":
-        logger.debug("Frontend asks for new frame!")
+        fastapi_logger.info("Frontend asks for new frame!")
         _, frame = camera.read()
         try:
             queue.put_nowait(frame)
-            logger.debug('put bytes in queue')
+            fastapi_logger.info('put bytes in queue')
         except asyncio.QueueFull:
-            logger.debug('the queue is full')
+            fastapi_logger.info('the queue is full')
             pass
 
 
 async def detect(websocket: WebSocket, queue: asyncio.Queue):
     while True:
         img = await queue.get()
-        logger.debug(f"started at {time.strftime('%X')}")
+        fastapi_logger.info(f"started at {time.strftime('%X')}")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray_bytes = cv2.imencode('.jpg', gray)[1].tobytes()
         faces = cascade_classifier.detectMultiScale(gray)
@@ -53,24 +50,26 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
             faces_output = Faces(faces=faces.tolist())
         else:
             faces_output = Faces(faces=[])
+        #data = {'frame': 'test'}
+        #await websocket.send_json(data)
         await websocket.send_bytes(gray_bytes)
-        #await websocket.send_json(faces_output.dict())
+        await websocket.send_json(faces_output.dict())
         queue.task_done()
 
 @app.websocket("/face-detection")
 async def face_detection(websocket: WebSocket):
     await websocket.accept()
-    logger.debug('the websocket is accepted')
-    queue: asyncio.Queue = asyncio.Queue(maxsize=5)
+    fastapi_logger.info('the websocket is accepted')
+    queue: asyncio.Queue = asyncio.Queue(maxsize=3)
     detect_task = asyncio.create_task(detect(websocket, queue))
 
     try:
         while camera.isOpened():
             await receive(websocket, queue)
-    except WebSocketDisconnect:
+    except WebSocketDisconnect: # Check the connection with the received socket
         detect_task.cancel()
         await websocket.close()
-
+        camera.release()
 
 @app.on_event("startup")
 async def startup():
