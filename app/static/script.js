@@ -1,4 +1,4 @@
-const IMAGE_INTERVAL_MS = 84; // Asks for 12 frames per seconds
+const IMAGE_INTERVAL_MS = 1000; // Asks for 12 frames per seconds
 
 const drawFaceRectangles = (img, canvas, faces) => {
   const ctx = canvas.getContext('2d');
@@ -45,7 +45,9 @@ const startFaceDetection = (img, canvas, deviceId) => {
       //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
     } else {
         // json frame
-        img.onload = drawFaceRectangles(img, canvas, JSON.parse(event.data));
+        const output = JSON.parse(event.data)
+        img.onload = drawFaceRectangles(img, canvas, output);
+        document.getElementById('nbPerson').innerHTML = parseInt(output.nbPerson)
     }
   });
 

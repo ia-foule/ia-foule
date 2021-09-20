@@ -11,6 +11,8 @@ import time, sys, os
 from fastapi.logger import logger as fastapi_logger
 import logging
 
+import onnxruntime
+from pathlib import Path
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static",html = True), name="static")
@@ -20,6 +22,9 @@ fastapi_logger.handlers = logger.handlers
 fastapi_logger.setLevel(logger.level)
 
 cascade_classifier = cv2.CascadeClassifier()
+MODEL_NAME = os.getenv("MODEL_NAME")
+ort_session = onnxruntime.InferenceSession(str(Path('/models/mmcn') / MODEL_NAME))
+
 
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
@@ -44,16 +49,27 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
         img = await queue.get()
         fastapi_logger.info(f"started at {time.strftime('%X')}")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray_bytes = cv2.imencode('.jpg', gray)[1].tobytes()
+        # face detection
         faces = cascade_classifier.detectMultiScale(gray)
+
+        # crowd counting
+        ort_inputs = {ort_session.get_inputs()[0].name: cv2.resize(
+            gray,(768, 1024)).reshape((1,1,768,1024)).astype(np.float32)}
+        ort_outs = ort_session.run(None, ort_inputs)
+        density_map = ort_outs[0]
+        nb_person = np.squeeze(density_map, axis=(0,1)).sum()
+        print(nb_person)
         if len(faces) > 0:
             faces_output = Faces(faces=faces.tolist())
         else:
             faces_output = Faces(faces=[])
         #data = {'frame': 'test'}
         #await websocket.send_json(data)
-        await websocket.send_bytes(gray_bytes)
-        await websocket.send_json(faces_output.dict())
+        faces_output = faces_output.dict()
+        faces_output.update(dict(nbPerson=str(nb_person)))
+        await websocket.send_bytes(cv2.imencode('.jpg', gray)[1].tobytes())
+        await websocket.send_json(faces_output)
+
         queue.task_done()
 
 @app.websocket("/face-detection")

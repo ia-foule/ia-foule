@@ -11,6 +11,7 @@ export PYTHONDONTWRITEBYTECODE=1
 # compose command to merge production file and and dev/tools overrides
 export COMPOSE?=docker-compose -f docker-compose.yml
 
+export MODEL_NAME = mcnn_shtechB_186v7_ri.onnx
 dummy		    := $(shell touch artifacts)
 include ./artifacts
 
@@ -20,7 +21,7 @@ include ./artifacts
 
 models/mmcn:
 	mkdir -p models/mmcn/
-	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/mcnn_shtechB_186v7_ri.onnx
+	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/$(MODEL_NAME) -P models/mmcn
 
 dev: models/mmcn
 	@echo "Listening on port: $(APP_PORT)"

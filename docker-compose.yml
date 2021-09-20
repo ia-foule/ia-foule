@@ -16,4 +16,5 @@ services:
      - APP_PORT=${APP_PORT}
      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
      - RTSP_ADDR=${RTSP_ADDR}
+     - MODEL_NAME=${MODEL_NAME}
     command: ${COMMAND_PARAMS}
