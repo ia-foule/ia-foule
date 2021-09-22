@@ -1,0 +1,26 @@
+version: '3.4'
+services:
+  nginx-dev:
+    image: datalab-mi/nginx-dev
+    container_name: nginx-dev
+    build:
+      context: nginx
+      target: development
+      dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+    environment:
+      - APP
+      - BACKEND_HOST
+      - BACKEND_PORT
+      - FRONTEND_HOST
+      - FRONTEND_PORT
+    ports:
+      - "$PORT:80"
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}

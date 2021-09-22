@@ -1,0 +1,18 @@
+upstream backend {
+  server <BACKEND_HOST>:<BACKEND_PORT>;
+}
+
+server {
+  listen 80;
+  server_name  localhost;
+
+
+  location / {
+      alias /usr/share/nginx/html/export/;
+      try_files $uri $uri/ /index.html$is_args$args;
+    }
+
+  location /api {
+      proxy_pass http://backend/;
+  }
+}

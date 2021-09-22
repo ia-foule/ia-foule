@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 import time, sys, os
@@ -15,7 +15,7 @@ import onnxruntime
 from pathlib import Path
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static",html = True), name="static")
+app.mount("/public", StaticFiles(directory="public",html = True), name="public")
 
 logger = logging.getLogger("gunicorn.error")
 fastapi_logger.handlers = logger.handlers
@@ -29,7 +29,7 @@ ort_session = onnxruntime.InferenceSession(str(Path('/models/mmcn') / MODEL_NAME
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
 
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture("/imgs/Pexels Videos 2740.mp4")
 
 async def receive(websocket: WebSocket, queue: asyncio.Queue):
     ws_text = await websocket.receive_text()
@@ -86,6 +86,14 @@ async def face_detection(websocket: WebSocket):
         detect_task.cancel()
         await websocket.close()
         camera.release()
+
+@app.post("/image/")
+async def predict_on_image(file: bytes = File(...)):
+    return {"file_size": len(file)}
+
+@app.get("/url/")
+async def predict_on_url(url: str):
+    return item
 
 @app.on_event("startup")
 async def startup():

@@ -3,13 +3,18 @@ version: '3.4'
 services:
   backend:
     volumes:
-      - ./app:/app/
+      - ./backend/app:/app/
       - ./tests:/tests/
       - ./models:/models/
       - ./imgs:/imgs/
     ports:
-      - "7000:80"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     devices:
       - "/dev/video0:/dev/video0"
     environment:
      - LOG_LEVEL=info
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}

@@ -1,0 +1,32 @@
+version: '3.4'
+services:
+  frontend-dev:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      target: dev
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+    stdin_open: true
+    environment:
+      - NODE_ENV=development
+      - SKIP_PREFLIGHT_CHECK=true
+      - FRONTEND_PORT=${FRONTEND_PORT}
+    image: datalab-mi/${APP}-frontend
+    container_name: ${FRONTEND_HOST}
+    volumes:
+      - ./frontend/src:/app/src
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "35729:35729"
+    environment:
+      - http_proxy
+      - https_proxy
+      - no_proxy
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}
