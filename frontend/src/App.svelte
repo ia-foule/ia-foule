@@ -1,28 +1,29 @@
 <script>
 	import Camera from './Camera.svelte';
 	import Image from './Image.svelte';
-	import Video2 from './Video2.svelte';
+	import Video from './Video.svelte';
 
 	let options = [
-	{ id: 1, text: `Video`, needUrl: true, class: `Video` },
-	{ id: 2, text: `Image`, needUrl: true, class: `Image` },
-	{ id: 3, text: `Rtsp`, needUrl: false, class: `Rtsp` }
+	{ id: 1, text: `Video (Depuis le navigateur)`, needUrl: false, needFile:true, class: `Video` },
+	// not implemented
+	{ id: 2, text: `Video (Depuis le serveur)`, needUrl: true, needFile:false, class: `VideoServer` },
+	{ id: 3, text: `Image (Depuis le navigateur)`, needUrl: true, needFile:true, class: `Image` },
+	// not implemented
+	{ id: 4, text: `Rtsp (Depuis le serveur)`, needUrl: false, needFile:false,class: `Rtsp` }
 	];
 
 	// Add video device of the client
 	navigator.mediaDevices.enumerateDevices().then((devices) => {
 		for (const device of devices) {
 			if (device.kind === 'videoinput' && device.deviceId) {
-				const option = { id: device.deviceId, text: device.label, needUrl: false, class: `Camera` }
+				const option = { id: device.deviceId, text: device.label, needUrl: false,needFile:false, class: `Camera` }
 				options = [...options, option];
 			}
 		}
 	});
 
 	let selected;
-	let url='';
-	let files;
-	$: { if (files) {url = URL.createObjectURL(files[0])}}
+
 
 	let isSubmit=false;
 
@@ -30,11 +31,12 @@
 
 	function handleChange() {
 		console.log(selected);
-		console.log(isSubmit);
 	}
 
 	async function handleSubmit() {
 		isSubmit = !isSubmit
+		console.log(isSubmit);
+
 	}
 </script>
 
@@ -54,29 +56,18 @@
 		{/each}
 	</select>
 
-	{#if (selected !== undefined && selected.needUrl)}
-		<label for="input">Depuis internet:</label>
-		<input bind:value={url} placeholder="Coller une url">
-		<label for="input">Depuis l'ordinateur:</label>
-		<input type="file" id="input" accept="video/mp4, video/mov" bind:files>
-		<button disabled={!url} type=submit>
-			Submit
-		</button>
-
-	{:else}
 	<button type=submit>
-		Submit
+		Go
 	</button>
-	{/if}
 </form>
 
-{#if isSubmit }
-	{#if (url && selected.class === 'Image')}
-		<Image {url} bind:nbPerson={nbPerson}/>
+{#if isSubmit === true }
+	{#if selected.class === 'Image'}
+		<Image bind:nbPerson={nbPerson}/>
 	{:else if selected.class === 'Camera' }
 		<Camera deviceId={selected.id} bind:nbPerson={nbPerson}/>
 	{:else if selected.class === 'Video' }
-		<Video2 {url} file={files[0]} bind:nbPerson={nbPerson}/>
+		<Video  bind:nbPerson={nbPerson}/>
 	{/if}
 {/if}
 
