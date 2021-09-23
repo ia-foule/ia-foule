@@ -9,8 +9,6 @@ WORKDIR /home/nginx
 
 COPY run.sh run.sh
 
-RUN  [ -f "run.sh" ] && chmod +x run.sh
-
 EXPOSE 80/tcp
 EXPOSE 443/tcp
 
@@ -22,6 +20,7 @@ RUN apt-get update --allow-releaseinfo-change -y
 FROM base as development
 
 COPY default-dev.template /etc/nginx/conf.d/default.template
+RUN  [ -f "run.sh" ] && chmod +x  run.sh
 
 CMD ["/home/nginx/run.sh"]
 

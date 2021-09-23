@@ -1,30 +1,27 @@
 import asyncio
 from typing import List, Tuple
-
+import requests
+import io
+from PIL import Image, ImageOps
 import cv2
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException
 from pydantic import BaseModel
-from fastapi.staticfiles import StaticFiles
 import time, sys, os
 
 from fastapi.logger import logger as fastapi_logger
 import logging
 
-import onnxruntime
-from pathlib import Path
+
+from model import predict
 
 app = FastAPI()
-app.mount("/public", StaticFiles(directory="public",html = True), name="public")
 
 logger = logging.getLogger("gunicorn.error")
 fastapi_logger.handlers = logger.handlers
 fastapi_logger.setLevel(logger.level)
 
 cascade_classifier = cv2.CascadeClassifier()
-MODEL_NAME = os.getenv("MODEL_NAME")
-ort_session = onnxruntime.InferenceSession(str(Path('/models/mmcn') / MODEL_NAME))
-
 
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
@@ -42,7 +39,7 @@ async def receive(websocket: WebSocket, queue: asyncio.Queue):
         except asyncio.QueueFull:
             fastapi_logger.info('the queue is full')
             pass
-
+    bytes = await websocket.receive_bytes()
 
 async def detect(websocket: WebSocket, queue: asyncio.Queue):
     while True:
@@ -51,7 +48,6 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # face detection
         faces = cascade_classifier.detectMultiScale(gray)
-
         # crowd counting
         ort_inputs = {ort_session.get_inputs()[0].name: cv2.resize(
             gray,(768, 1024)).reshape((1,1,768,1024)).astype(np.float32)}
@@ -78,7 +74,6 @@ async def face_detection(websocket: WebSocket):
     fastapi_logger.info('the websocket is accepted')
     queue: asyncio.Queue = asyncio.Queue(maxsize=3)
     detect_task = asyncio.create_task(detect(websocket, queue))
-
     try:
         while camera.isOpened():
             await receive(websocket, queue)
@@ -87,13 +82,62 @@ async def face_detection(websocket: WebSocket):
         await websocket.close()
         camera.release()
 
-@app.post("/image/")
-async def predict_on_image(file: bytes = File(...)):
-    return {"file_size": len(file)}
+################
+# from browser #
+################
 
-@app.get("/url/")
+async def receive_for_browser(websocket: WebSocket, queue: asyncio.Queue):
+    bytes = await websocket.receive_bytes()
+    try:
+        queue.put_nowait(bytes)
+    except asyncio.QueueFull:
+        pass
+
+async def detect_for_browser(websocket: WebSocket, queue: asyncio.Queue):
+    while True:
+        bytes = await queue.get()
+        img = Image.open(io.BytesIO(bytes))
+        nb_person = predict(img)
+        await websocket.send_text(str(nb_person))
+        queue.task_done()
+
+@app.websocket("/video-browser")
+async def video_browser(websocket: WebSocket):
+    await websocket.accept()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=10)
+    detect_task = asyncio.create_task(detect_for_browser(websocket, queue))
+    try:
+        while True:
+            await receive_for_browser(websocket, queue)
+    except WebSocketDisconnect:
+        detect_task.cancel()
+        await websocket.close()
+
+################
+# Other routes #
+################
+
+@app.post("/image/")
+async def predict_on_image(file: UploadFile = File(...)):
+    if 'image' in file.content_type:
+        content = await file.read()
+        img = Image.open(io.BytesIO(content))
+        img = img.convert('RGB')
+        img.save('/app/tests/data/pexels.jpg')
+        nb_person = predict(img)
+        return {'nb_person': nb_person}
+    else:
+        raise HTTPException(status_code=422, detail='Not an image')
+
+@app.get("/prediction/")
 async def predict_on_url(url: str):
-    return item
+    try:
+        resp = requests.get(url)
+        img = Image.open(io.BytesIO(resp.content))
+        nb_person = predict(img)
+        return {'nb_person': nb_person}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=e)
 
 @app.on_event("startup")
 async def startup():

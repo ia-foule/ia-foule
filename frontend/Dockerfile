@@ -1,5 +1,3 @@
-ARG FRONTEND_PORT
-
 #######################
 # Step 1: Base target #
 #######################
@@ -18,9 +16,12 @@ RUN npm install
 # Step 2: "development" target #
 ################################
 FROM base as dev
-EXPOSE 5000
+ARG FRONTEND_PORT
+
+EXPOSE $FRONTEND_PORT
+
+ENV PORT=$FRONTEND_PORT
 ENV HOST=0.0.0.0
-ENV PORT=
 
 CMD [ "npm", "run","dev" ]
 
