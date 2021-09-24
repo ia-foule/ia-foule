@@ -8,8 +8,8 @@
 
 
   async function draw() {
-      var img = new Image(500,300);
-      ctx.drawImage(img, 0, 0)//, img.naturalWidth, img.naturalHeight);
+      var img = new Image();
+      ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
       img.onload = function() {
         ctx.drawImage(img, 0, 0);
       };

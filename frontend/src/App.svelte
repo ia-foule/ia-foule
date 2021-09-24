@@ -71,23 +71,22 @@
 		<Video  bind:nbPerson={nbPerson}/>
 	{/if}
 {/if}
-</aside>
 
-<aside class="aside aside-2">
 {#if nbPerson }
 	<p> {nbPerson} personnes </p>
 {/if}
+
 </aside>
 
 <main>
-<canvas id="result-image" width="500" height="300" bind:this={canvas}/>
+<canvas id="result-image" width="1000" height="600" bind:this={canvas}/>
 </main>
 </div>
 <style>
 	main {
 		text-align: center;
 		padding: 1em;
-		max-width: 240px;
+		max-width: 75%;
 		margin: 0 auto;
 	}
 
@@ -99,18 +98,18 @@
 	}
 
 
-
-	img {
-		width:500;
-		}
-
 	#result-image {
+		border: 1px solid #d3d3d3;
+		object-fit: cover;
+		background-color: black;
+		width: 100%;
+		height: auto;
 	}
 	/*------ Asides ------*/
 
 	.wrapper {
 	  display: flex;
-	  /*flex-flow: row wrap;*/
+	  flex-flow: row wrap;
 	  font-weight: bold;
 	  text-align: center;
 	}
@@ -126,6 +125,9 @@
 	.aside-2 {
 	  background: white;
 	}
+	@media  (min-width: 640px) {
+  .aside { flex: 1 0 0; }
+}
 	@media (min-width: 640px) {
    main    { flex: 3 0px; }
   .aside-1 { order: 1; }
