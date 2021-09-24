@@ -2,21 +2,21 @@
 	import Camera from './Camera.svelte';
 	import Image from './Image.svelte';
 	import Video from './Video.svelte';
+	import VideoServer from './VideoServer.svelte';
 
 	let options = [
-	{ id: 1, text: `Video (Depuis le navigateur)`, needUrl: false, needFile:true, class: `Video` },
+	{ id: 1, text: `Video (Depuis le navigateur)`, class: `Video` },
+	{ id: 2, text: `Video (Depuis le serveur)`,  class: `VideoServer` },
+	{ id: 3, text: `Image (Depuis le navigateur)`, class: `Image` },
 	// not implemented
-	{ id: 2, text: `Video (Depuis le serveur)`, needUrl: true, needFile:false, class: `VideoServer` },
-	{ id: 3, text: `Image (Depuis le navigateur)`, needUrl: true, needFile:true, class: `Image` },
-	// not implemented
-	{ id: 4, text: `Rtsp (Depuis le serveur)`, needUrl: false, needFile:false,class: `Rtsp` }
+	{ id: 4, text: `Rtsp (Depuis le serveur)`, class: `Rtsp` }
 	];
 
 	// Add video device of the client
 	navigator.mediaDevices.enumerateDevices().then((devices) => {
 		for (const device of devices) {
 			if (device.kind === 'videoinput' && device.deviceId) {
-				const option = { id: device.deviceId, text: device.label, needUrl: false,needFile:false, class: `Camera` }
+				const option = { id: device.deviceId, text: device.label, class: `Camera` }
 				options = [...options, option];
 			}
 		}
@@ -66,9 +66,11 @@
 	{#if selected.class === 'Image'}
 		<Image bind:nbPerson={nbPerson} {canvas}/>
 	{:else if selected.class === 'Camera' }
-		<Camera deviceId={selected.id} bind:nbPerson={nbPerson}/>
+		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {canvas}/>
 	{:else if selected.class === 'Video' }
-		<Video  bind:nbPerson={nbPerson}/>
+		<Video  bind:nbPerson={nbPerson} {canvas}/>
+	{:else if selected.class === 'VideoServer' }
+			<VideoServer bind:nbPerson={nbPerson} {canvas}/>
 	{/if}
 {/if}
 
@@ -79,8 +81,9 @@
 </aside>
 
 <main>
-<canvas id="result-image" width="1000" height="600" bind:this={canvas}/>
+	<canvas id="result-image" width="1000" height="600" bind:this={canvas}/>
 </main>
+
 </div>
 <style>
 	main {
@@ -120,6 +123,8 @@
 	}
 	.aside-1 {
 	  background: white;
+		max-width: 20%;
+		min-width: 0;
 	}
 
 	.aside-2 {

@@ -3,14 +3,15 @@ import { onMount, onDestroy } from 'svelte';
 
 export let deviceId;
 export let nbPerson;
+export let canvas;
 let video;
 let socket;
 
 console.log('start stream!');
 const IMAGE_INTERVAL_MS = 1000;
 
-const startCounting = (video, canvas, deviceId) => {
-  const socket = new WebSocket('ws://localhost/api/video-browser');
+const startCounting = (video, deviceId) => {
+  socket = new WebSocket('ws://localhost/api/video-browser');
   let intervalId;
 
   // Connection opened
@@ -27,15 +28,11 @@ const startCounting = (video, canvas, deviceId) => {
     }).then(function (stream) {
       video.srcObject = stream;
       video.play().then(() => {
-        // Adapt overlay canvas size to the video size
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
         // Send an image in the WebSocket every 42 ms
         intervalId = setInterval(() => {
           // Create a virtual canvas to draw current video image
           const ctx = canvas.getContext('2d');
-          canvas.width = video.videoWidth;
+          //canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0);
 
@@ -62,12 +59,11 @@ const startCounting = (video, canvas, deviceId) => {
 };
 
 onMount( () => {
-  var canvas = document.createElement('canvas');
   // Close previous socket is there is one
   if (socket) {
     socket.close();
   }
-  socket = startCounting(video, canvas, deviceId);
+  socket = startCounting(video, deviceId);
 });
 
 onDestroy( () => {
@@ -79,7 +75,13 @@ onDestroy( () => {
 <div class="container">
   <div>
     <video
+      width = 200
       bind:this={video}>
       <track kind="captions"/></video>
   </div>
 </div>
+<style>
+video {
+  object-fit:cover;
+}
+</style>

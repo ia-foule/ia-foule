@@ -21,12 +21,12 @@ logger = logging.getLogger("gunicorn.error")
 fastapi_logger.handlers = logger.handlers
 fastapi_logger.setLevel(logger.level)
 
-cascade_classifier = cv2.CascadeClassifier()
 
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
 
 camera = cv2.VideoCapture("/imgs/Pexels Videos 2740.mp4")
+
 
 async def receive(websocket: WebSocket, queue: asyncio.Queue):
     ws_text = await websocket.receive_text()
@@ -39,45 +39,34 @@ async def receive(websocket: WebSocket, queue: asyncio.Queue):
         except asyncio.QueueFull:
             fastapi_logger.info('the queue is full')
             pass
-    bytes = await websocket.receive_bytes()
 
 async def detect(websocket: WebSocket, queue: asyncio.Queue):
     while True:
         img = await queue.get()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(img)
         fastapi_logger.info(f"started at {time.strftime('%X')}")
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # face detection
-        faces = cascade_classifier.detectMultiScale(gray)
-        # crowd counting
-        ort_inputs = {ort_session.get_inputs()[0].name: cv2.resize(
-            gray,(768, 1024)).reshape((1,1,768,1024)).astype(np.float32)}
-        ort_outs = ort_session.run(None, ort_inputs)
-        density_map = ort_outs[0]
-        nb_person = np.squeeze(density_map, axis=(0,1)).sum()
-        print(nb_person)
-        if len(faces) > 0:
-            faces_output = Faces(faces=faces.tolist())
-        else:
-            faces_output = Faces(faces=[])
-        #data = {'frame': 'test'}
-        #await websocket.send_json(data)
-        faces_output = faces_output.dict()
-        faces_output.update(dict(nbPerson=str(nb_person)))
-        await websocket.send_bytes(cv2.imencode('.jpg', gray)[1].tobytes())
-        await websocket.send_json(faces_output)
+        nb_person = predict(img)
+        await websocket.send_text(str(nb_person))
+
+        imgByteArr = io.BytesIO()
+        img.save(imgByteArr, format="jpeg")
+        await websocket.send_bytes(imgByteArr.getvalue())
 
         queue.task_done()
 
-@app.websocket("/face-detection")
+@app.websocket("/video-server")
 async def face_detection(websocket: WebSocket):
     await websocket.accept()
     fastapi_logger.info('the websocket is accepted')
     queue: asyncio.Queue = asyncio.Queue(maxsize=3)
     detect_task = asyncio.create_task(detect(websocket, queue))
+    print('go')
     try:
         while camera.isOpened():
             await receive(websocket, queue)
     except WebSocketDisconnect: # Check the connection with the received socket
+        print('WS disco')
         detect_task.cancel()
         await websocket.close()
         camera.release()
@@ -141,6 +130,4 @@ async def predict_on_url(url: str):
 
 @app.on_event("startup")
 async def startup():
-    cascade_classifier.load(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
+    pass

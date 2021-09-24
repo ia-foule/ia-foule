@@ -1,6 +1,6 @@
 <script>
   export let nbPerson;
-
+  export let canvas
   let files;
   let url;
   let video;
@@ -49,7 +49,6 @@
     console.log(e)
     // TODO : try ->
     //https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/captureStream
-    var canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
