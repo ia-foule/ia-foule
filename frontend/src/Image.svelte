@@ -3,6 +3,8 @@
   console.log('Image')
   export let nbPerson;
   export let canvas
+  let promise = new Promise(() => {})
+
   var ctx = canvas.getContext("2d");
   let url;
 
@@ -32,19 +34,25 @@
          url = e.target.result
          draw()
        };
-
-
    let data = new FormData()
    data.append('file', image)
-   let response = await fetch(`/api/image/`, {
-           method: "POST",
-           body: data
-         })
-   let result = await response.json();
-   nbPerson = result.nb_person
+   promise = predictOnImage(data);
   }
 
-  let response;
+  // fetch function
+  async function predictOnImage(data) {
+    let response = await fetch(`/api/image/`, {
+            method: "POST",
+            body: data
+          })
+		if (response.ok) {
+      let result = await response.json();
+      nbPerson = result.nb_person
+			return result;
+		} else {
+			throw new Error(response.statusText);
+		}
+	}
 
 </script>
 
@@ -52,6 +60,10 @@
 <input bind:value={url} placeholder="Coller une url"on:change={onUrlCopied}>
 <input  type="file" accept=".jpg, .jpeg, .png" on:change={(e)=>onFileSelected(e)} >
 
+{#await promise}
+{:catch error}
+  <p style="color: red">{error.message}</p>
+{/await}
 
 <style>
 </style>

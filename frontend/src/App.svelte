@@ -58,7 +58,7 @@
 	</select>
 
 	<button type=submit>
-		Go
+		{@html isSubmit? "Stop" : "Go"}
 	</button>
 </form>
 
