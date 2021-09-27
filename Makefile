@@ -24,6 +24,9 @@ export PORT = 80
 
 export MODEL_NAME = mcnn_shtechB_186v7_ri.onnx
 dummy		    := $(shell touch artifacts)
+
+DC_UP_ARGS= --force-recreate #s--build
+
 include ./artifacts
 
 #############
@@ -42,7 +45,7 @@ models/mmcn:
 	mkdir -p models/mmcn/
 	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/$(MODEL_NAME) -P models/mmcn
 
-backend-dev: models/mmcn
+backend-dev: #models/mmcn
 	@echo "Listening on port: $(BACKEND_PORT)"
 	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml up -d $(DC_UP_ARGS)
 

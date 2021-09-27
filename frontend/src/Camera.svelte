@@ -8,7 +8,7 @@ let video;
 let socket;
 
 console.log('start stream!');
-const IMAGE_INTERVAL_MS = 1000;
+const IMAGE_INTERVAL_MS = 42;
 
 const startCounting = (video, deviceId) => {
   socket = new WebSocket('ws://localhost/api/video-browser');

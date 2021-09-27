@@ -25,20 +25,36 @@ fastapi_logger.setLevel(logger.level)
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
 
-camera = cv2.VideoCapture("/imgs/Pexels Videos 2740.mp4")
 
 
-async def receive(websocket: WebSocket, queue: asyncio.Queue):
-    ws_text = await websocket.receive_text()
-    if ws_text == "frame":
-        fastapi_logger.info("Frontend asks for new frame!")
-        _, frame = camera.read()
+################
+# from server  #
+################
+
+
+async def fill(camera, queue: asyncio.Queue):
+    while camera.isOpened():
+        ret, frame = camera.read()
+        if not ret:
+            #print('video is finished!')
+            break
         try:
             queue.put_nowait(frame)
-            fastapi_logger.info('put bytes in queue')
+            #print('put frame in queue')
+            fastapi_logger.info('put frame in queue')
         except asyncio.QueueFull:
-            fastapi_logger.info('the queue is full')
+            fastapi_logger.info('the queue is full of frame')
             pass
+
+async def receive(websocket: WebSocket, queue: asyncio.Queue, queue_frame: asyncio.LifoQueue):
+    ws_text = await websocket.receive_text()
+    if (ws_text == "frame") and (not queue.full()):
+        #print("Frontend asks for new frame!")
+        fastapi_logger.info("Frontend asks for new frame!")
+        frame = await queue_frame.get()
+        queue.put_nowait(frame)
+        fastapi_logger.info('put bytes in queue')
+        queue_frame.task_done()
 
 async def detect(websocket: WebSocket, queue: asyncio.Queue):
     while True:
@@ -47,6 +63,7 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
         img = Image.fromarray(img)
         fastapi_logger.info(f"started at {time.strftime('%X')}")
         nb_person = predict(img)
+
         await websocket.send_text(str(nb_person))
 
         imgByteArr = io.BytesIO()
@@ -58,16 +75,21 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket):
     await websocket.accept()
-    fastapi_logger.info('the websocket is accepted')
-    queue: asyncio.Queue = asyncio.Queue(maxsize=3)
+    await websocket.send_text("0")
+    camera = cv2.VideoCapture("/app/tests/data/Pexels Videos 1625972.mp4")
+    queue_frame: asyncio.LifoQueue = asyncio.Queue(maxsize=5)
+    fill_task = asyncio.create_task(fill(camera, queue_frame))
+    queue: asyncio.Queue = asyncio.Queue(maxsize=5)
     detect_task = asyncio.create_task(detect(websocket, queue))
-    print('go')
+
     try:
-        while camera.isOpened():
-            await receive(websocket, queue)
+        while True:
+            await receive(websocket, queue, queue_frame)
+
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
         detect_task.cancel()
+        fill_task.cancel()
         await websocket.close()
         camera.release()
 
@@ -99,6 +121,7 @@ async def video_browser(websocket: WebSocket):
         while True:
             await receive_for_browser(websocket, queue)
     except WebSocketDisconnect:
+        print("WS disco")
         detect_task.cancel()
         await websocket.close()
 
@@ -112,7 +135,7 @@ async def predict_on_image(file: UploadFile = File(...)):
         content = await file.read()
         img = Image.open(io.BytesIO(content))
         img = img.convert('RGB')
-        img.save('/app/tests/data/pexels.jpg')
+        #img.save('/app/tests/data/pexels.jpg')
         nb_person = predict(img)
         return {'nb_person': nb_person}
     else:

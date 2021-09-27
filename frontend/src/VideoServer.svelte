@@ -8,7 +8,7 @@
 
   let socket;
   let intervalId;
-  const IMAGE_INTERVAL_MS = 1000; // Asks for 12 frames per seconds
+  const IMAGE_INTERVAL_MS = 500; // Asks for 12 frames per seconds
 
   async function draw() {
       var img = new Image();
