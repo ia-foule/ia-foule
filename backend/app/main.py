@@ -12,7 +12,9 @@ import time, sys, os
 from fastapi.logger import logger as fastapi_logger
 import logging
 
-
+import ffmpeg
+import subprocess
+import zmq
 from model import predict
 
 app = FastAPI()
@@ -25,40 +27,43 @@ fastapi_logger.setLevel(logger.level)
 class Faces(BaseModel):
     faces: List[Tuple[int, int, int, int]]
 
+import imagezmq
 
+# definition of subclass starts here
+class ImageHubSmallQueue(imagezmq.ImageHub):
+    def init_pubsub(self, address):
+       """ Initialize Hub in PUB/SUB mode
+       """
+       socketType = zmq.SUB
+       self.zmq_context = imagezmq.SerializingContext()
+       self.zmq_socket = self.zmq_context.socket(socketType)
+       self.zmq_socket.setsockopt(zmq.SUBSCRIBE, b'')
+       self.zmq_socket.setsockopt(zmq.RCVHWM, 2)
+       self.zmq_socket.connect(address)
 
+# Instantiate and provide the first sender / publisher address
+image_hub = ImageHubSmallQueue(open_port='tcp://localhost:5555', REQ_REP=False)
 ################
 # from server  #
 ################
 
 
-async def fill(camera, queue: asyncio.Queue):
-    while camera.isOpened():
-        ret, frame = camera.read()
-        if not ret:
-            #print('video is finished!')
-            break
+async def receive(websocket: WebSocket, queue: asyncio.Queue):
+    ws_text = await websocket.receive_text()
+    print(ws_text)
+    if (ws_text == "frame") :
         try:
-            queue.put_nowait(frame)
-            #print('put frame in queue')
-            fastapi_logger.info('put frame in queue')
+            rpi_name, image = image_hub.recv_image()
+            if type(image) is np.ndarray:
+                queue.put_nowait(image)
         except asyncio.QueueFull:
-            fastapi_logger.info('the queue is full of frame')
             pass
 
-async def receive(websocket: WebSocket, queue: asyncio.Queue, queue_frame: asyncio.LifoQueue):
-    ws_text = await websocket.receive_text()
-    if (ws_text == "frame") and (not queue.full()):
-        #print("Frontend asks for new frame!")
-        fastapi_logger.info("Frontend asks for new frame!")
-        frame = await queue_frame.get()
-        queue.put_nowait(frame)
-        fastapi_logger.info('put bytes in queue')
-        queue_frame.task_done()
 
 async def detect(websocket: WebSocket, queue: asyncio.Queue):
     while True:
         img = await queue.get()
+        print(img.shape)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(img)
         fastapi_logger.info(f"started at {time.strftime('%X')}")
@@ -76,22 +81,16 @@ async def detect(websocket: WebSocket, queue: asyncio.Queue):
 async def face_detection(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text("0")
-    camera = cv2.VideoCapture("/app/tests/data/Pexels Videos 1625972.mp4")
-    queue_frame: asyncio.LifoQueue = asyncio.Queue(maxsize=5)
-    fill_task = asyncio.create_task(fill(camera, queue_frame))
     queue: asyncio.Queue = asyncio.Queue(maxsize=5)
     detect_task = asyncio.create_task(detect(websocket, queue))
 
     try:
         while True:
-            await receive(websocket, queue, queue_frame)
-
+            await receive(websocket, queue)
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
         detect_task.cancel()
-        fill_task.cancel()
         await websocket.close()
-        camera.release()
 
 ################
 # from browser #

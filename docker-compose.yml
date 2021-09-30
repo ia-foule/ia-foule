@@ -2,7 +2,7 @@ version: '3.4'
 services:
    backend:
     image: datalab-mi/${APP}-backend
-    container_name: ${BACKEND_HOST}
+    container_name: backend
     build:
       context: backend
       dockerfile: Dockerfile

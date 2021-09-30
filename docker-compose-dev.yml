@@ -12,7 +12,7 @@ services:
     devices:
       - "/dev/video0:/dev/video0"
     environment:
-     - LOG_LEVEL=info
+     - LOG_LEVEL=${LOG_LEVEL}
 
 networks:
   default:

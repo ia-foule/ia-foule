@@ -8,13 +8,19 @@
 
   let socket;
   let intervalId;
-  const IMAGE_INTERVAL_MS = 500; // Asks for 12 frames per seconds
+  const IMAGE_INTERVAL_MS = 1000; // Asks for 12 frames per seconds
 
-  async function draw() {
+  async function draw(url) {
       var img = new Image();
-      ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
+      //ctx.clearRect(0, 0, canvas.width, canvas.height) // clear canvas
+      //ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
       img.onload = function() {
-        ctx.drawImage(img, 0, 0);
+        // get the scale
+        var scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        // get the top left position of the image
+        var x = (canvas.width / 2) - (img.width / 2) * scale;
+        var y = (canvas.height / 2) - (img.height / 2) * scale;
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       };
       img.src = url;
   }
@@ -36,11 +42,7 @@ onMount( async () => {
   socket.addEventListener('message', function (event) {
     console.log('ws message')
     if (event.data instanceof Blob) {
-      const img = new Image();
-      img.onload = function() {
-        ctx.drawImage(img, 0, 0);
-      };
-      img.src = URL.createObjectURL( event.data ) ;
+      draw(URL.createObjectURL( event.data ) )
       URL.revokeObjectURL(event.data)
       //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
     } else {

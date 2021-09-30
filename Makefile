@@ -15,7 +15,8 @@ export DC_NETWORK_OPT = --opt com.docker.network.driver.mtu=1450
 export DC_NETWORK = ia-foule
 # BACKEND
 export BACKEND_PORT=5000
-export BACKEND_HOST = backend
+export BACKEND_HOST=backend
+export LOG_LEVEL=trace # in dev mode only
 # FRONTEND
 export FRONTEND_PORT=3000
 export FRONTEND_HOST = frontend
