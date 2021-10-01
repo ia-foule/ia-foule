@@ -3,8 +3,10 @@ import time
 import imagezmq
 import cv2
 import zmq
+import os
 
-# Accept connections on all tcp addresses, port 5555
+# Patch ImageSender to limit the queue size
+# https://github.com/jeffbass/imagezmq/issues/27#issuecomment-931330169
 class ImageSenderSmallQueue(imagezmq.ImageSender):
     def init_pubsub(self, address):
         """Creates and inits a socket in PUB/SUB mode
@@ -20,12 +22,13 @@ class ImageSenderSmallQueue(imagezmq.ImageSender):
         self.send_image = self.send_image_pubsub
         self.send_jpg   = self.send_jpg_pubsub
 
+# Accept connections on all tcp addresses, port 5555
 sender = ImageSenderSmallQueue(connect_to='tcp://*:5555', REQ_REP=False)
 
 rpi_name =  'localhost'#socket.gethostname() # send RPi hostname with each image
 print(rpi_name)
 time.sleep(2.0)  # allow camera sensor to warm up
-cam = cv2.VideoCapture('rtsp://192.168.1.18/3/profile2/media.smp')
+cam = cv2.VideoCapture(os.getenv('RTSP_ADDR'))
 frame_rate = 1
 prev = 0
 while True:  # send images until Ctrl-C

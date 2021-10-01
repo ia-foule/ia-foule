@@ -6,10 +6,10 @@
 
 	let options = [
 	{ id: 1, text: `Video (Depuis le navigateur)`, class: `Video` },
-	{ id: 2, text: `Video (Depuis le serveur)`,  class: `VideoServer` },
-	{ id: 3, text: `Image (Depuis le navigateur)`, class: `Image` },
+	//{ id: 2, text: `Video (Depuis le serveur)`,  class: `VideoServer` },
+	{ id: 2, text: `Image (Depuis le navigateur)`, class: `Image` },
 	// not implemented
-	{ id: 4, text: `Rtsp (Depuis le serveur)`, class: `Rtsp` }
+	{ id: 3, text: `Rtsp (Depuis le serveur)`, class: `Rtsp` }
 	];
 
 	// Add video device of the client

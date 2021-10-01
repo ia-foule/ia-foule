@@ -17,19 +17,16 @@ import subprocess
 import zmq
 from model import predict
 
+import imagezmq
+
 app = FastAPI()
 
 logger = logging.getLogger("gunicorn.error")
 fastapi_logger.handlers = logger.handlers
 fastapi_logger.setLevel(logger.level)
 
-
-class Faces(BaseModel):
-    faces: List[Tuple[int, int, int, int]]
-
-import imagezmq
-
-# definition of subclass starts here
+# Patch ImageHub to limit the queue size
+# https://github.com/jeffbass/imagezmq/issues/27#issuecomment-931330169
 class ImageHubSmallQueue(imagezmq.ImageHub):
     def init_pubsub(self, address):
        """ Initialize Hub in PUB/SUB mode
@@ -43,10 +40,10 @@ class ImageHubSmallQueue(imagezmq.ImageHub):
 
 # Instantiate and provide the first sender / publisher address
 image_hub = ImageHubSmallQueue(open_port='tcp://localhost:5555', REQ_REP=False)
+
 ################
 # from server  #
 ################
-
 
 async def receive(websocket: WebSocket, queue: asyncio.Queue):
     ws_text = await websocket.receive_text()
