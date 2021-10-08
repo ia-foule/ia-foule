@@ -1,0 +1,9 @@
+opencv-python-headless==4.5.3.56
+aiofiles
+ffmpeg-python
+onnxruntime==1.8.1
+python-multipart==0.0.5
+pytest==6.2.5
+requests
+Pillow
+imagezmq

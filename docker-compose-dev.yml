@@ -3,10 +3,18 @@ version: '3.4'
 services:
   backend:
     volumes:
-      - ./backend:/${APP}/backend/
-      - ./tests:/${APP}/tests/
-      - ./models:/${APP}/models/
-      - ./imgs:/${APP}/imgs/
-      - ./setup.py:/${APP}/setup.py
+      - ./backend/app:/app/
+      - ./backend/tests:/app/tests
+      - ./models:/models/
+      - ./imgs:/imgs/
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    devices:
+      - "/dev/video0:/dev/video0"
+    environment:
+     - LOG_LEVEL=${LOG_LEVEL}
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}
