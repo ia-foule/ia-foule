@@ -3,6 +3,7 @@
 	import Image from './Image.svelte';
 	import Video from './Video.svelte';
 	import VideoServer from './VideoServer.svelte';
+	import Rtsp from './Rtsp.svelte';
 
 	let options = [
 	{ id: 1, text: `Video (Depuis le navigateur)`, class: `Video` },
@@ -71,11 +72,14 @@
 		<Video  bind:nbPerson={nbPerson} {canvas}/>
 	{:else if selected.class === 'VideoServer' }
 			<VideoServer bind:nbPerson={nbPerson} {canvas}/>
+	{:else if selected.class === 'Rtsp' }
+			<Rtsp bind:nbPerson={nbPerson} {canvas}/>
 	{/if}
+
 {/if}
 
 {#if nbPerson }
-	<p> {nbPerson} personnes </p>
+	<p> {nbPerson} {nbPerson === "0" ? 'personne' : 'personnes'} </p>
 {/if}
 
 </aside>

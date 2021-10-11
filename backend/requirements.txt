@@ -6,4 +6,3 @@ python-multipart==0.0.5
 pytest==6.2.5
 requests
 Pillow
-imagezmq

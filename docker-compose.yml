@@ -15,7 +15,7 @@ services:
      - no_proxy
      - PORT=${BACKEND_PORT}
      - PYTHONUNBUFFERED
-     - RTSP_ADDR
+     - RTSP_ADDR=${RTSP_ADDR}
      - MODEL_NAME
     command: ${COMMAND_PARAMS}
 
