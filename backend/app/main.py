@@ -12,12 +12,10 @@ import time, sys, os
 from fastapi.logger import logger as fastapi_logger
 import logging
 
-import ffmpeg
-import subprocess
-import zmq
+from pathlib import Path
+
 from model import predict
 
-import imagezmq
 
 app = FastAPI()
 
@@ -25,68 +23,35 @@ logger = logging.getLogger("gunicorn.error")
 fastapi_logger.handlers = logger.handlers
 fastapi_logger.setLevel(logger.level)
 
-# Patch ImageHub to limit the queue size
-# https://github.com/jeffbass/imagezmq/issues/27#issuecomment-931330169
-class ImageHubSmallQueue(imagezmq.ImageHub):
-    def init_pubsub(self, address):
-       """ Initialize Hub in PUB/SUB mode
-       """
-       socketType = zmq.SUB
-       self.zmq_context = imagezmq.SerializingContext()
-       self.zmq_socket = self.zmq_context.socket(socketType)
-       self.zmq_socket.setsockopt(zmq.SUBSCRIBE, b'')
-       self.zmq_socket.setsockopt(zmq.RCVHWM, 2)
-       self.zmq_socket.connect(address)
-
-# Instantiate and provide the first sender / publisher address
-image_hub = ImageHubSmallQueue(open_port='tcp://localhost:5555', REQ_REP=False)
-
 ################
 # from server  #
 ################
 
-async def receive(websocket: WebSocket, queue: asyncio.Queue):
+async def receive(websocket: WebSocket):
+    # Just a ping-pong to check the connection
     ws_text = await websocket.receive_text()
-    print(ws_text)
-    if (ws_text == "frame") :
-        try:
-            rpi_name, image = image_hub.recv_image()
-            if type(image) is np.ndarray:
-                queue.put_nowait(image)
-        except asyncio.QueueFull:
-            pass
 
-
-async def detect(websocket: WebSocket, queue: asyncio.Queue):
+async def detect(websocket: WebSocket):
+    # Detection is already made by client_ffmpeg, get binary frame and send through
+    # websocket to the brower.
+    p = Path('/tmp/frame.bin')
+    st_mtime_ns_read = 0
     while True:
-        img = await queue.get()
-        print(img.shape)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(img)
-        fastapi_logger.info(f"started at {time.strftime('%X')}")
-        nb_person = predict(img)
-
-        await websocket.send_text(str(nb_person))
-
-        imgByteArr = io.BytesIO()
-        img.save(imgByteArr, format="jpeg")
-        await websocket.send_bytes(imgByteArr.getvalue())
-
-        queue.task_done()
-
+        st_mtime_ns = p.stat().st_mtime_ns
+        if st_mtime_ns > st_mtime_ns_read:
+            st_mtime_ns_read = p.stat().st_mtime_ns
+            await websocket.send_bytes(p.read_bytes())
+            await websocket.send_text(Path('/tmp/count').read_text())
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text("0")
-    queue: asyncio.Queue = asyncio.Queue(maxsize=5)
-    detect_task = asyncio.create_task(detect(websocket, queue))
-
+    detect_task = asyncio.create_task(detect(websocket))
     try:
         while True:
-            await receive(websocket, queue)
+            await receive(websocket)
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
-        detect_task.cancel()
         await websocket.close()
 
 ################
