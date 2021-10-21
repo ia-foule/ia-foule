@@ -5,8 +5,10 @@ import io
 from PIL import Image, ImageOps
 import cv2
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException, Header
 from pydantic import BaseModel
+from typing import Optional
+
 import time, sys, os
 
 from fastapi.logger import logger as fastapi_logger
@@ -103,9 +105,9 @@ async def predict_on_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail='Not an image')
 
 @app.get("/prediction/")
-async def predict_on_url(url: str):
+async def predict_on_url(url: str, user_agent: Optional[str] = Header(None)):
     try:
-        resp = requests.get(url)
+        resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
         nb_person = predict(img)
         return {'nb_person': nb_person}
