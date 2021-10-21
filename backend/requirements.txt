@@ -1,5 +1,6 @@
 opencv-python-headless==4.5.3.56
 aiofiles
+fastapi==0.61.0
 ffmpeg-python
 onnxruntime==1.8.1
 python-multipart==0.0.5

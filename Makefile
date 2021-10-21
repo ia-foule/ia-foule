@@ -23,7 +23,7 @@ export FRONTEND_HOST = frontend
 # NGINX
 export PORT = 80
 
-export MODEL_NAME = mcnn_shtechB_186v7_ri.onnx
+export MODEL_NAME = mcnn_shtechB_186v11_da_ri.onnx
 dummy		    := $(shell touch artifacts)
 
 DC_UP_ARGS= --force-recreate #s--build
@@ -55,7 +55,7 @@ backend: models/mmcn
 	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d
 
 test:
-	$(COMPOSE) -f docker-compose.yml run --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/'
+	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml  run  --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
 
 exec:
 	$(COMPOSE) -f docker-compose.yml exec backend bash
