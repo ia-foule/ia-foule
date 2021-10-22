@@ -5,6 +5,8 @@
 	import VideoServer from './VideoServer.svelte';
 	import Rtsp from './Rtsp.svelte';
 
+	import Display from './Display.svelte';
+
 	let options = [
 	{ id: 1, text: `Video (Depuis le navigateur)`, class: `Video` },
 	//{ id: 2, text: `Video (Depuis le serveur)`,  class: `VideoServer` },
@@ -29,7 +31,7 @@
 
 	let nbPerson;
 
-	let canvas; // the canvas where result image is drawn
+	let display; // the display where result image is drawn
 	function handleChange() {
 		console.log(selected);
 	}
@@ -65,15 +67,15 @@
 
 {#if isSubmit === true }
 	{#if selected.class === 'Image'}
-		<Image bind:nbPerson={nbPerson} {canvas}/>
+		<Image bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Camera' }
-		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {canvas}/>
+		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Video' }
-		<Video  bind:nbPerson={nbPerson} {canvas}/>
+		<Video  bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'VideoServer' }
-			<VideoServer bind:nbPerson={nbPerson} {canvas}/>
+			<VideoServer bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Rtsp' }
-			<Rtsp bind:nbPerson={nbPerson} {canvas}/>
+			<Rtsp bind:nbPerson={nbPerson} {display}/>
 	{/if}
 
 {/if}
@@ -85,7 +87,7 @@
 </aside>
 
 <main>
-	<canvas id="result-image" width="1000" height="600" bind:this={canvas}/>
+	<Display bind:this={display} />
 </main>
 
 </div>
@@ -104,14 +106,6 @@
 		font-weight: 100;
 	}
 
-
-	#result-image {
-		border: 1px solid #d3d3d3;
-		object-fit: cover;
-		background-color: black;
-		width: 100%;
-		height: auto;
-	}
 	/*------ Asides ------*/
 
 	.wrapper {

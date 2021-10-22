@@ -1,6 +1,6 @@
 <script>
   export let nbPerson;
-  export let canvas
+  export let display;
   let files;
   let url;
   let video;
@@ -49,13 +49,13 @@
     console.log(e)
     // TODO : try ->
     //https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/captureStream
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.filter = 'grayscale(1)'; // reduce dimension
-    ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-    //img.src = canvas.toDataURL();
-    let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+
+    // Grayscale and set canvas size
+    // TODO : display color image and send seperately the grayscale image
+    display.adjust(video.videoWidth, video.videoHeight)
+
+    display.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    let blob = await new Promise(resolve => display.toBlob(resolve, 'image/jpeg'));
     // blob image in RGBA
     let data = new FormData()
     data.append('file', blob)

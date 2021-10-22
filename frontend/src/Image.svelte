@@ -2,34 +2,16 @@
   import { onMount } from 'svelte';
   console.log('Image')
   export let nbPerson;
-  export let canvas
+  export let display;
   let promise = new Promise(() => {})
-
-  var ctx = canvas.getContext("2d");
   let url;
 
-
-  async function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height) // clear canvas
-      var img = new Image();
-      img.onload = function() {
-        // get the scale
-        var scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-        // get the top left position of the image
-        var x = (canvas.width / 2) - (img.width / 2) * scale;
-        var y = (canvas.height / 2) - (img.height / 2) * scale;
-        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-        // without scaling
-        //ctx.drawImage(img, 0, 0, img.width,    img.height,     // source rectangle
-        //           0, 0, canvas.width, canvas.height); // destination rectangle
-      };
-      img.src = url;
-  }
-
-
   const onUrlCopied = async () => {
-    draw()
+    display.drawInput(url)
     let response = await fetch(`/api/prediction/?url=${url}`)
+    // Suppose get the density map
+    //ctx.globalAlpha = 0.0;
+    //draw('https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg')
     let result = await response.json();
     nbPerson = result.nb_person
   }
@@ -40,7 +22,7 @@
     reader.readAsDataURL(image);
     reader.onload = e => {
          url = e.target.result
-         draw()
+         display.drawInput(url)
        };
    let data = new FormData()
    data.append('file', image)
