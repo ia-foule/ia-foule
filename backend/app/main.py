@@ -16,7 +16,8 @@ import logging
 
 from pathlib import Path
 
-from count import predict
+from count import predict as predict_count
+from detect import predict as predict_detect
 
 
 app = FastAPI()
@@ -71,7 +72,7 @@ async def detect_for_browser(websocket: WebSocket, queue: asyncio.Queue):
     while True:
         bytes = await queue.get()
         img = Image.open(io.BytesIO(bytes))
-        nb_person = predict(img)
+        nb_person = predict_count(img)
         await websocket.send_text(str(nb_person))
         queue.task_done()
 
@@ -104,38 +105,53 @@ def array2url(arr):
     return url
 
 @app.post("/image/")
-async def predict_on_image(density: bool = False, file: UploadFile = File(...)):
+async def predict_on_image(density: bool = False,
+                            detection: bool = False,
+                            file: UploadFile = File(...)):
     if 'image' in file.content_type:
         content = await file.read()
         img = Image.open(io.BytesIO(content))
         img = img.convert('RGB')
-        #img.save('/app/tests/data/pexels.jpg')
-        nb_person = predict(img)
+        # Prepare result
+        result = {}
         if not density:
-            nb_person, _ = predict(img)
-            return {'nb_person': nb_person}
+            nb_person, _ = predict_count(img)
+            result.update({'nb_person': nb_person})
         else:
-            nb_person, density_map = predict(img)
+            nb_person, density_map = predict_count(img)
             url = array2url(density_map)
-            return {'nb_person': nb_person, 'url':url}
+            result.update({'nb_person': nb_person, 'url': url})
+        if detection:
+            bboxes = predict_detect(img)
+            result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
+        return result
+
     else:
         raise HTTPException(status_code=422, detail='Not an image')
 
 @app.get("/prediction/")
-async def predict_on_url(url: str, density: bool = False, user_agent: Optional[str] = Header(None)):
+async def predict_on_url(url: str,
+                        density: bool = False,  # Compute density map
+                        detection: bool = False, # Run detection model
+                        user_agent: Optional[str] = Header(None)):
     try:
         resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
-
+        # Prepare result
+        result = {}
         if not density:
-            nb_person, _ = predict(img)
-            return {'nb_person': nb_person}
+            nb_person, _ = predict_count(img)
+            result.update({'nb_person': nb_person})
         else:
-            nb_person, density_map = predict(img)
+            nb_person, density_map = predict_count(img)
             url = array2url(density_map)
-            return {'nb_person': nb_person, 'url':url}
+            result.update({'nb_person': nb_person, 'url': url})
+        if detection:
+            bboxes = predict_detect(img)
+            result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
+        return result
 
-            #return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
 

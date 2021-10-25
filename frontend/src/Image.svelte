@@ -6,18 +6,24 @@
   export let nbPerson;
   // boolean parameter to get crowd density
   export let density;
+  // boolean parameter to get bounding boxes from a detector
+  export let detection;
 
   let promise = new Promise(() => {})
   let url; //='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Crowd_Tokyo.jpg/1280px-Crowd_Tokyo.jpg';
 
   const onUrlCopied = async () => {
     display.drawInput(url)
-    let response = await fetch(`/api/prediction/?url=${url}&density=${density}`)
+    let response = await fetch(`/api/prediction/?url=${url}&density=${density}&detection=${detection}`)
     let result = await response.json();
     nbPerson = result.nb_person
     if (density === true) {//&& ('density_map' in result) {
       //display.drawDensity(result.density_map)
       display.drawDensity('data:image/png;base64,' + result.url)
+    }
+    if (detection === true) {//&& ('density_map' in result) {
+      //display.drawDensity(result.density_map)
+      display.drawBox(result.bboxes, result.width, result.height)
     }
   }
 
@@ -36,14 +42,19 @@
 
   // fetch function
   async function predictOnImage(data) {
-    let response = await fetch(`/api/image/?density=${density}`, {
+    let response = await fetch(`/api/image/?density=${density}&detection=${detection}`, {
             method: "POST",
             body: data
           })
 		if (response.ok) {
       let result = await response.json();
       nbPerson = result.nb_person
-      display.drawDensity('data:image/png;base64,' + result.url)
+      if (density === true) {
+        display.drawDensity('data:image/png;base64,' + result.url)
+      }
+      if (detection === true) {
+        display.drawBox(result.bboxes, result.width, result.height)
+      }
 			return result;
 		} else {
 			throw new Error(response.statusText);

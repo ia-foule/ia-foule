@@ -26,12 +26,14 @@
 	});
 
 	let selected;
-	let density=false; // If density map is needed
+	let density=true; // If density map is needed
+	let detection=true; // If density map is needed
+
 	let isSubmit=false;
 
 	let nbPerson;
 
-	let display; // the display where result image is drawn
+	let display; // the display component where result image is drawn
 	function handleChange() {
 		console.log(selected);
 	}
@@ -69,7 +71,7 @@
 
 {#if isSubmit === true }
 	{#if selected.class === 'Image'}
-		<Image bind:nbPerson={nbPerson} {display} {density}/>
+		<Image bind:nbPerson={nbPerson} {display} {density} {detection}/>
 	{:else if selected.class === 'Camera' }
 		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Video' }
@@ -90,13 +92,19 @@
 <h2>Settings</h2>
 <label>
 	<input type=checkbox bind:checked={density}>
-	Compute density
+	Display density map
 </label>
+
+<label>
+	<input type=checkbox bind:checked={detection}>
+	Display detection bboxes
+</label>
+
 
 </aside>
 
 <main>
-	<Display bind:this={display} />
+	<Display bind:this={display}/>
 </main>
 
 </div>
