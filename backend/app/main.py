@@ -3,9 +3,9 @@ from typing import List, Tuple
 import requests
 import io
 from PIL import Image, ImageOps
-import cv2
 import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException, Header
+from starlette.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -16,7 +16,7 @@ import logging
 
 from pathlib import Path
 
-from model import predict
+from count import predict
 
 
 app = FastAPI()
@@ -105,12 +105,22 @@ async def predict_on_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail='Not an image')
 
 @app.get("/prediction/")
-async def predict_on_url(url: str, user_agent: Optional[str] = Header(None)):
+async def predict_on_url(url: str, density: bool = False, user_agent: Optional[str] = Header(None)):
     try:
         resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
-        nb_person = predict(img)
-        return {'nb_person': nb_person}
+        if not density:
+            nb_person, _ = predict(img)
+            return {'nb_person': nb_person}
+        else:
+            nb_person, density_map = predict(img)
+            output_file = io.StringIO()
+
+            np.savetxt(output_file, density_map * 255 /density_map.max() , delimiter=",",fmt='%.d')
+
+            return {'nb_person': nb_person, 'density_map': output_file.getvalue()}
+
+            #return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
 

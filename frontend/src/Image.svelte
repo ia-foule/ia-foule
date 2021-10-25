@@ -1,19 +1,23 @@
 <script>
   import { onMount } from 'svelte';
-  console.log('Image')
-  export let nbPerson;
+  // input image component
   export let display;
+  // ouptut
+  export let nbPerson;
+  // boolean parameter to get crowd density
+  export let density;
+
   let promise = new Promise(() => {})
-  let url;
+  let url; //='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Crowd_Tokyo.jpg/1280px-Crowd_Tokyo.jpg';
 
   const onUrlCopied = async () => {
     display.drawInput(url)
-    let response = await fetch(`/api/prediction/?url=${url}`)
-    // Suppose get the density map
-    //ctx.globalAlpha = 0.0;
-    //draw('https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg')
+    let response = await fetch(`/api/prediction/?url=${url}&density=${density}`)
     let result = await response.json();
     nbPerson = result.nb_person
+    if (density === true) {//&& ('density_map' in result) {
+      display.drawDensity(result.density_map)
+    }
   }
 
   const onFileSelected = async (e) => {

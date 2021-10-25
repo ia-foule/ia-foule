@@ -8,9 +8,9 @@
 	import Display from './Display.svelte';
 
 	let options = [
-	{ id: 1, text: `Video (Depuis le navigateur)`, class: `Video` },
+	{ id: 1, text: `Image (Depuis le navigateur)`, class: `Image` },
+	{ id: 2, text: `Video (Depuis le navigateur)`, class: `Video` },
 	//{ id: 2, text: `Video (Depuis le serveur)`,  class: `VideoServer` },
-	{ id: 2, text: `Image (Depuis le navigateur)`, class: `Image` },
 	// not implemented
 	{ id: 3, text: `Rtsp (Depuis le serveur)`, class: `Rtsp` }
 	];
@@ -26,7 +26,7 @@
 	});
 
 	let selected;
-
+	let density=false; // If density map is needed
 	let isSubmit=false;
 
 	let nbPerson;
@@ -51,6 +51,8 @@
 <div class="wrapper">
 
 <aside class="aside aside-1">
+
+<h2>Inputs</h2>
 <form on:submit|preventDefault={handleSubmit}>
 	<select bind:value={selected} on:change={handleChange}>
 		{#each options as option}
@@ -67,7 +69,7 @@
 
 {#if isSubmit === true }
 	{#if selected.class === 'Image'}
-		<Image bind:nbPerson={nbPerson} {display}/>
+		<Image bind:nbPerson={nbPerson} {display} {density}/>
 	{:else if selected.class === 'Camera' }
 		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Video' }
@@ -81,8 +83,15 @@
 {/if}
 
 {#if nbPerson }
+	<h2>Résultat</h2>
 	<p> {nbPerson} {nbPerson === "0" ? 'personne' : 'personnes'} </p>
 {/if}
+
+<h2>Settings</h2>
+<label>
+	<input type=checkbox bind:checked={density}>
+	Compute density
+</label>
 
 </aside>
 

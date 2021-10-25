@@ -10,7 +10,7 @@ def test_predict_on_url():
     response = client.get("/prediction/?url="+url,
         headers={'User-Agent':'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0'})
     assert response.status_code == 200
-    assert response.json() == {'nb_person': 59}
+    assert response.json() == {'nb_person': 55}
 
 def test_predict_on_image():
     img_path = Path(__file__).resolve().parent / 'data/IMG_1.jpg'
