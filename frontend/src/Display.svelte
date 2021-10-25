@@ -35,8 +35,8 @@
       var dx = (canvas.width / 2) - (img.width / 2) * scale;
       var dy = (canvas.height / 2) - (img.height / 2) * scale;
       var dWidth = img.width * scale
-      var sWidth = img.height * scale
-      ctx.drawImage(img, dx, dy, dWidth, sWidth);
+      var dHeight = img.height * scale
+      ctx.drawImage(img, dx, dy, dWidth, dHeight);
       // without scaling
       //ctxI.drawImage(img, 0, 0, img.width,    img.height,     // source rectangle
       //           0, 0, canvasI.width, canvasI.height); // destination rectangle
@@ -67,7 +67,13 @@
     }
     // Initialize a new ImageData object
     let imageData = new ImageData(buffer, width , height);
-    ctxD.putImageData(imageData, 0, 0);
+    var scale = Math.min(canvasD.width / width, canvasD.height / height);
+    // get the top left position of the image
+    var dx = (canvasD.width / 2) - (width / 2) * scale;
+    var dy = (canvasD.height / 2) - (height / 2) * scale;
+    var dirtyWidth = width * scale
+    var dirtyHeight = height * scale
+    ctxD.putImageData(imageData, dx, dy, dirtyWidth, dirtyHeight);
 
     //var dataUri = canvasD.toDataURL();
     //draw(dataUri, ctxD, canvasD)
