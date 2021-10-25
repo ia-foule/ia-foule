@@ -48,35 +48,9 @@
     draw(url, ctxI, canvasI)
   }
 
-  export function drawDensity(density_map) {
-    // density_map is an 2Darray
-    density_map = csvToArray(density_map)
-    var width = density_map[0].length
-    var height = density_map.length
-    console.log(width, height);
-    console.log(density_map[0])
-    var buffer = new Uint8ClampedArray(width * height * 4);
-    for(var y = 0; y < height; y++) {
-    for(var x = 0; x < width; x++) {
-        var pos = (y * width + x) * 4; // position in buffer based on x and y
-        buffer[pos  ] = density_map[y][x];           // some R value [0, 255]
-        buffer[pos+1] = 0;           // some G value
-        buffer[pos+2] = 0;           // some B value
-        buffer[pos+3] = density_map[y][x] > 0 ? 255: 0;           // set alpha channel
-        }
-    }
-    // Initialize a new ImageData object
-    let imageData = new ImageData(buffer, width , height);
-    var scale = Math.min(canvasD.width / width, canvasD.height / height);
-    // get the top left position of the image
-    var dx = (canvasD.width / 2) - (width / 2) * scale;
-    var dy = (canvasD.height / 2) - (height / 2) * scale;
-    var dirtyWidth = width * scale
-    var dirtyHeight = height * scale
-    ctxD.putImageData(imageData, dx, dy, dirtyWidth, dirtyHeight);
+  export function drawDensity(url) {
+    draw(url, ctxD, canvasD)
 
-    //var dataUri = canvasD.toDataURL();
-    //draw(dataUri, ctxD, canvasD)
   }
 
   export function adjust(dx, dy) {

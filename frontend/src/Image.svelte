@@ -16,7 +16,8 @@
     let result = await response.json();
     nbPerson = result.nb_person
     if (density === true) {//&& ('density_map' in result) {
-      display.drawDensity(result.density_map)
+      //display.drawDensity(result.density_map)
+      display.drawDensity('data:image/png;base64,' + result.url)
     }
   }
 
@@ -35,13 +36,14 @@
 
   // fetch function
   async function predictOnImage(data) {
-    let response = await fetch(`/api/image/`, {
+    let response = await fetch(`/api/image/?density=${density}`, {
             method: "POST",
             body: data
           })
 		if (response.ok) {
       let result = await response.json();
       nbPerson = result.nb_person
+      display.drawDensity('data:image/png;base64,' + result.url)
 			return result;
 		} else {
 			throw new Error(response.statusText);

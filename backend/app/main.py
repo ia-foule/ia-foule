@@ -1,14 +1,14 @@
 import asyncio
 from typing import List, Tuple
 import requests
-import io
+import io, base64
 from PIL import Image, ImageOps
 import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException, Header
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
-
+import matplotlib.pyplot as plt
 import time, sys, os
 
 from fastapi.logger import logger as fastapi_logger
@@ -91,16 +91,33 @@ async def video_browser(websocket: WebSocket):
 ################
 # Other routes #
 ################
+def array2url(arr):
+    cmap = plt.get_cmap('jet')
+    rgba_img = cmap(arr / arr.max(), alpha=(arr != 0) * 1, bytes=True)
+    in_mem_file = io.BytesIO()
+    img = Image.fromarray(rgba_img, mode='RGBA')
+    img.save(in_mem_file, format = "PNG")
+    # reset file pointer to start
+    in_mem_file.seek(0)
+    img_bytes = in_mem_file.read()
+    url = base64.b64encode(img_bytes).decode('ascii')
+    return url
 
 @app.post("/image/")
-async def predict_on_image(file: UploadFile = File(...)):
+async def predict_on_image(density: bool = False, file: UploadFile = File(...)):
     if 'image' in file.content_type:
         content = await file.read()
         img = Image.open(io.BytesIO(content))
         img = img.convert('RGB')
         #img.save('/app/tests/data/pexels.jpg')
         nb_person = predict(img)
-        return {'nb_person': nb_person}
+        if not density:
+            nb_person, _ = predict(img)
+            return {'nb_person': nb_person}
+        else:
+            nb_person, density_map = predict(img)
+            url = array2url(density_map)
+            return {'nb_person': nb_person, 'url':url}
     else:
         raise HTTPException(status_code=422, detail='Not an image')
 
@@ -109,16 +126,14 @@ async def predict_on_url(url: str, density: bool = False, user_agent: Optional[s
     try:
         resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
+
         if not density:
             nb_person, _ = predict(img)
             return {'nb_person': nb_person}
         else:
             nb_person, density_map = predict(img)
-            output_file = io.StringIO()
-
-            np.savetxt(output_file, density_map * 255 /density_map.max() , delimiter=",",fmt='%.d')
-
-            return {'nb_person': nb_person, 'density_map': output_file.getvalue()}
+            url = array2url(density_map)
+            return {'nb_person': nb_person, 'url':url}
 
             #return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     except Exception as e:
