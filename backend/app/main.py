@@ -16,7 +16,7 @@ import logging
 
 from pathlib import Path
 
-from count import predict as predict_count
+from dsnet import predict as predict_count
 from detect import predict as predict_detect
 
 

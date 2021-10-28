@@ -23,7 +23,7 @@ export FRONTEND_HOST = frontend
 # NGINX
 export PORT = 80
 
-export MODEL_NAME = mcnn_shtechB_186v11_da_ri.onnx
+export MODEL_NAME = dsnet_shtechBv11_da_ri.onnx
 dummy		    := $(shell touch artifacts)
 
 DC_UP_ARGS= --force-recreate #s--build
@@ -45,6 +45,9 @@ network:
 models/mmcn:
 	mkdir -p models/mmcn/
 	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/$(MODEL_NAME) -P models/mmcn
+models/dsnet:
+	mkdir -p models/dsnet/
+	wget https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share/$(MODEL_NAME) -P models/dsnet
 
 backend-dev: #models/mmcn
 	@echo "Listening on port: $(BACKEND_PORT)"
