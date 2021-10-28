@@ -3,7 +3,7 @@ import { onMount, onDestroy } from 'svelte';
 
 export let deviceId;
 export let nbPerson;
-export let canvas;
+export let display;
 let video;
 let socket;
 
@@ -31,13 +31,11 @@ const startCounting = (video, deviceId) => {
         // Send an image in the WebSocket every 42 ms
         intervalId = setInterval(() => {
           // Create a virtual canvas to draw current video image
-          const ctx = canvas.getContext('2d');
-          //canvas.width = video.videoWidth;
-          //canvas.height = video.videoHeight;
-          ctx.drawImage(video, 0, 0);
+          display.drawImage(video)
 
           // Convert it to JPEG and send it to the WebSocket
-          canvas.toBlob((blob) => socket.send(blob), 'image/jpeg');
+          display.toBlob((blob) => socket.send(blob), 'image/jpeg');
+
         }, IMAGE_INTERVAL_MS);
       });
     });

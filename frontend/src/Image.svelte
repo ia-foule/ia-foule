@@ -1,37 +1,30 @@
 <script>
   import { onMount } from 'svelte';
-  console.log('Image')
+  // input image component
+  export let display;
+  // ouptut
   export let nbPerson;
-  export let canvas
+  // boolean parameter to get crowd density
+  export let density;
+  // boolean parameter to get bounding boxes from a detector
+  export let detection;
+
   let promise = new Promise(() => {})
-
-  var ctx = canvas.getContext("2d");
-  let url;
-
-
-  async function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height) // clear canvas
-      var img = new Image();
-      img.onload = function() {
-        // get the scale
-        var scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-        // get the top left position of the image
-        var x = (canvas.width / 2) - (img.width / 2) * scale;
-        var y = (canvas.height / 2) - (img.height / 2) * scale;
-        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-        // without scaling
-        //ctx.drawImage(img, 0, 0, img.width,    img.height,     // source rectangle
-        //           0, 0, canvas.width, canvas.height); // destination rectangle
-      };
-      img.src = url;
-  }
-
+  let url; //='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Crowd_Tokyo.jpg/1280px-Crowd_Tokyo.jpg';
 
   const onUrlCopied = async () => {
-    draw()
-    let response = await fetch(`/api/prediction/?url=${url}`)
+    display.drawInput(url)
+    let response = await fetch(`/api/prediction/?url=${url}&density=${density}&detection=${detection}`)
     let result = await response.json();
     nbPerson = result.nb_person
+    if (density === true) {//&& ('density_map' in result) {
+      //display.drawDensity(result.density_map)
+      display.drawDensity('data:image/png;base64,' + result.url)
+    }
+    if (detection === true) {//&& ('density_map' in result) {
+      //display.drawDensity(result.density_map)
+      display.drawBox(result.bboxes, result.width, result.height)
+    }
   }
 
   const onFileSelected = async (e) => {
@@ -40,7 +33,7 @@
     reader.readAsDataURL(image);
     reader.onload = e => {
          url = e.target.result
-         draw()
+         display.drawInput(url)
        };
    let data = new FormData()
    data.append('file', image)
@@ -49,13 +42,19 @@
 
   // fetch function
   async function predictOnImage(data) {
-    let response = await fetch(`/api/image/`, {
+    let response = await fetch(`/api/image/?density=${density}&detection=${detection}`, {
             method: "POST",
             body: data
           })
 		if (response.ok) {
       let result = await response.json();
       nbPerson = result.nb_person
+      if (density === true) {
+        display.drawDensity('data:image/png;base64,' + result.url)
+      }
+      if (detection === true) {
+        display.drawBox(result.bboxes, result.width, result.height)
+      }
 			return result;
 		} else {
 			throw new Error(response.statusText);
