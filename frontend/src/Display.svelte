@@ -1,6 +1,8 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-
+  export let detection;
+  export let density;
+  $: console.log('density : ' + density);
   // Input Image
   let canvasI;
   let ctxI;
@@ -17,7 +19,6 @@
     ctxI = canvasI.getContext("2d")
     ctxD = canvasD.getContext("2d")
     ctxB = canvasB.getContext("2d")
-
     // **** For debugging ****/
     //const bboxes = [{'x1': 74, 'y1': 89, 'x2': 181, 'y2': 308, 'class_name': 'accordion', 'confidence': 0.99},
     //              {'x1': 435, 'y1': 280, 'x2': 540, 'y2': 605, 'class_name': 'accordion', 'confidence': 0.97}]
@@ -104,9 +105,26 @@
 </script>
 
 <div style="position: relative;">
-  <canvas class="image input" width="1000" height="600" bind:this={canvasI}/>
-  <canvas class="image density" width="1000" height="600" bind:this={canvasD}/>
-  <canvas class="image bbox" width="1000" height="600" bind:this={canvasB}/>
+  <canvas
+    class="image input"
+    width="1000" height="600"
+    bind:this={canvasI}>
+  </canvas>
+
+  <canvas
+    class="image density"
+    width="1000" height="600"
+    bind:this={canvasD}
+    style="visibility: {density===true ? 'visible':'hidden'}">
+  </canvas>
+
+  <canvas
+    class="image bbox" 
+    width="1000" height="600"
+    bind:this={canvasB}
+    style="visibility: {detection===true ? 'visible':'hidden'}">
+  </canvas>
+
 </div>
 
 <style>

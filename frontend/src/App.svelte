@@ -104,7 +104,7 @@
 </aside>
 
 <main>
-	<Display bind:this={display}/>
+	<Display bind:this={display} {density} {detection}/>
 </main>
 
 </div>
