@@ -75,11 +75,11 @@
 	{:else if selected.class === 'Camera' }
 		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Video' }
-		<Video  bind:nbPerson={nbPerson} {display}/>
+		<Video  bind:nbPerson={nbPerson} {display} {density} {detection}/>
 	{:else if selected.class === 'VideoServer' }
-			<VideoServer bind:nbPerson={nbPerson} {display}/>
+		<VideoServer bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Rtsp' }
-			<Rtsp bind:nbPerson={nbPerson} {display}/>
+		<Rtsp bind:nbPerson={nbPerson} {display}/>
 	{/if}
 
 {/if}

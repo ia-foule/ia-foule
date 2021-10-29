@@ -13,7 +13,7 @@
   let url; //='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Crowd_Tokyo.jpg/1280px-Crowd_Tokyo.jpg';
 
   const onUrlCopied = async () => {
-    display.drawInput(url)
+    display.drawFromImg(url)
     let response = await fetch(`/api/prediction/?url=${url}&density=${density}&detection=${detection}`)
     let result = await response.json();
     nbPerson = result.nb_person
@@ -33,7 +33,7 @@
     reader.readAsDataURL(image);
     reader.onload = e => {
          url = e.target.result
-         display.drawInput(url)
+         display.drawFromImg(url)
        };
    let data = new FormData()
    data.append('file', image)

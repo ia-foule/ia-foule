@@ -26,38 +26,44 @@
     //drawDensity('https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg')
   });
 
-  // Function to parse csv file to array, for density map.
-  // TODO: backend return height and width to construct Uint8ClampedArray directly...
-  function csvToArray (csv) {
-      const rows = csv.split("\n");
-      return rows.map(function (row) {
-      	return row.split(",");
-      });
-  };
+  function computeScale(canvasW, canvasH, imgW, imgH) {
+    // Compute a scale to make the html element (image or video) to fit in the
+    // canvas
+    var scale = Math.min(canvasW / imgW, canvasH / imgH);
+    // get the top left position of the image
+    var dx = (canvasW / 2) - (imgW / 2) * scale;
+    var dy = (canvasH / 2) - (imgH / 2) * scale;
+    var dWidth = imgW * scale
+    var dHeight = imgH * scale
+    return [dx, dy, dWidth, dHeight]
+  }
+
 
   async function  draw(url, ctx, canvas) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height) // clear canvas
     var img = new Image();
     img.onload = function() {
       // get the scale
-      var scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-      // get the top left position of the image
-      var dx = (canvas.width / 2) - (img.width / 2) * scale;
-      var dy = (canvas.height / 2) - (img.height / 2) * scale;
-      var dWidth = img.width * scale
-      var dHeight = img.height * scale
+      let [dx, dy, dWidth, dHeight] = computeScale(canvas.width, canvas.height, img.width, img.height);
       ctx.drawImage(img, dx, dy, dWidth, dHeight);
-      // without scaling
-      //ctxI.drawImage(img, 0, 0, img.width,    img.height,     // source rectangle
-      //           0, 0, canvasI.width, canvasI.height); // destination rectangle
     };
     img.src = url;
   }
 
-  export function drawInput(url) {
-    ctxB.clearRect(0, 0, canvasB.width, canvasB.height) // clear canvas
-    ctxD.clearRect(0, 0, canvasD.width, canvasD.height) // clear canvas
+  export function drawFromImg(url) {
+    // Clear all canvas
+    ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
+    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     draw(url, ctxI, canvasI)
+  }
+
+  export function drawFromVideo(video) {
+    // Clear all canvas
+    ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
+    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+    let [dx, dy, dWidth, dHeight] = computeScale(canvasI.width, canvasI.height, video.videoWidth, video.videoHeight);
+    ctxI.drawImage(video, dx, dy, dWidth, dHeight);
   }
 
   export function drawDensity(url) {
@@ -92,11 +98,6 @@
   }
   // *** Wrappers of html methods to avoid to export it  ***
 
-  // Wrapper of drawImage
-  export function drawImage(video, dx=0, dy=0, dWidth=0, dHeight=0) {
-    ctxI.drawImage(video, dx, dy, dWidth, dHeight);
-  }
-
   // Wrapper of toBlob
   export function toBlob(callback, type) {
     return canvasI.toBlob(callback, type)
@@ -119,7 +120,7 @@
   </canvas>
 
   <canvas
-    class="image bbox" 
+    class="image bbox"
     width="1000" height="600"
     bind:this={canvasB}
     style="visibility: {detection===true ? 'visible':'hidden'}">
