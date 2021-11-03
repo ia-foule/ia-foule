@@ -57,7 +57,7 @@ def write_frame(frame):
 if __name__ == '__main__':
     RTSP_ADDR = os.getenv("RTSP_ADDR")
     print(RTSP_ADDR)
-    frame_rate = 1
+    frame_rate =  os.getenv("FRAME_RATE", 1)
     width, height = get_video_size(RTSP_ADDR)
     process = start_ffmpeg_process(RTSP_ADDR, frame_rate)
     while True:

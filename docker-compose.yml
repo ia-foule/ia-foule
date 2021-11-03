@@ -19,6 +19,8 @@ services:
      - MODEL_NAME_DSNET
      - MODEL_NAME_MMCN
      - MODEL_TYPE
+     - FRAME_RATE
+
     command: ${COMMAND_PARAMS}
 
 networks:

@@ -17,6 +17,8 @@ export DC_NETWORK = ia-foule
 export BACKEND_PORT=5000
 export BACKEND_HOST=backend
 export LOG_LEVEL=trace # in dev mode only
+export FRAME_RATE=1 # Frame rate for rtsp client
+
 # FRONTEND
 export FRONTEND_PORT=3000
 export FRONTEND_HOST = frontend
