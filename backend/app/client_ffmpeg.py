@@ -1,6 +1,6 @@
 import ffmpeg
 import subprocess
-from model import predict
+from count import predict
 from PIL import Image
 import os, io
 from pathlib import Path
