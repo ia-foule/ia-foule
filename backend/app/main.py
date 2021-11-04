@@ -45,6 +45,7 @@ async def detect(websocket: WebSocket):
             st_mtime_ns_read = p.stat().st_mtime_ns
             await websocket.send_bytes(p.read_bytes())
             await websocket.send_text(Path('/tmp/count').read_text())
+
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket):
     await websocket.accept()

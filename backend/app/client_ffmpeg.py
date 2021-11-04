@@ -41,7 +41,7 @@ def read_frame(process1, width, height):
 
 def process_frame(frame):
     '''Count people'''
-    nb_person = predict(frame)
+    nb_person, density_map = predict(frame)
     print('%s persons'%nb_person)
     p = Path('/tmp/count')
     p.write_text("%s"%nb_person)
@@ -65,4 +65,5 @@ if __name__ == '__main__':
         if in_frame is not None:
             out_frame = process_frame(in_frame)
             write_frame(out_frame)
+            print('new frame')
     process.wait()

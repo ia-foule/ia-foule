@@ -5,7 +5,6 @@ export let nbPerson;
 export let display;
 let video;
 let socket;
-var ctx = canvas.getContext("2d");
 const PING_INTERVAL_MS = 1000; // Ping every 1 s
 
 const startCounting = () => {
@@ -22,7 +21,7 @@ const startCounting = () => {
     socket.addEventListener('message', function (event) {
       console.log('ws message')
       if (event.data instanceof Blob) {
-        display.draw(URL.createObjectURL( event.data ))
+        display.drawInput(URL.createObjectURL( event.data ))
         URL.revokeObjectURL(event.data)
         //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
       } else {
