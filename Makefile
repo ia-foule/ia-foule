@@ -29,6 +29,7 @@ export PORT = 80
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
 export MODEL_NAME_DSNET = dsnet_shtechBv11_da_ri.onnx
 export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
+export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.onnx
 
 export MODEL_TYPE = dsnet
 
@@ -57,12 +58,22 @@ models/mmcn:
 models/dsnet:
 	mkdir -p models/dsnet/
 	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P models/dsnet
+models/detector:
+		mkdir -p models/dsnet/
+		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P models/faster_rcnn
 
-backend-dev: #models/mmcn
+make download-models:  models/mmcn models/dsnet models/detector
+
+
+#############
+#  Backend  #
+#############
+
+backend-dev: network
 	@echo "Listening on port: $(BACKEND_PORT)"
 	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml up -d $(DC_UP_ARGS)
 
-backend: models/mmcn
+backend:
 	@echo "Listening on port: $(BACKEND_PORT)"
 	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d
 
@@ -103,4 +114,4 @@ nginx-dev-exec:
 #  GENERAL   #
 ##############
 
-dev: frontend-dev backend-dev nginx-dev
+dev: fdownload-models frontend-dev backend-dev nginx-dev
