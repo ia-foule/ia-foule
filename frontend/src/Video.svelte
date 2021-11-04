@@ -1,6 +1,13 @@
 <script>
-  export let nbPerson;
+  // input image component
   export let display;
+  // ouptut
+  export let nbPerson;
+  // boolean parameter to get crowd density
+  export let density;
+  // boolean parameter to get bounding boxes from a detector
+  export let detection;
+
   let files;
   let url;
   let video;
@@ -50,22 +57,27 @@
     // TODO : try ->
     //https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/captureStream
 
-    // Grayscale and set canvas size
-    // TODO : display color image and send seperately the grayscale image
-    display.adjust(video.videoWidth, video.videoHeight)
+    // Set canvas size
 
-    display.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    //display.adjust(video.videoWidth, video.videoHeight)
+
+    display.drawFromVideo(video)//, 0, 0, video.videoWidth, video.videoHeight);
     let blob = await new Promise(resolve => display.toBlob(resolve, 'image/jpeg'));
     // blob image in RGBA
     let data = new FormData()
     data.append('file', blob)
-    let response = await fetch(`/api/image/`, {
+    let response = await fetch(`/api/image/?density=${density}&detection=${detection}`, {
             method: "POST",
             body: data
           })
     let result = await response.json();
     nbPerson = result.nb_person
-    console.log(nbPerson)
+    if (density === true) {
+      display.drawDensity('data:image/png;base64,' + result.url)
+    }
+    if (detection === true) {
+      display.drawBox(result.bboxes, result.width, result.height)
+    }
   }
 
   async function handlePlay(e) {

@@ -27,7 +27,7 @@ onMount( async () => {
   socket.addEventListener('message', function (event) {
     console.log('ws message')
     if (event.data instanceof Blob) {
-      display.drawInput(URL.createObjectURL( event.data ))
+      display.drawFromImg(URL.createObjectURL( event.data ))
       URL.revokeObjectURL(event.data)
       //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
     } else {

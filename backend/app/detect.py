@@ -4,7 +4,7 @@ import numpy as np
 import os
 from PIL import Image
 
-ort_session = onnxruntime.InferenceSession(str(Path('/models/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.onnx')), None)
+ort_session = onnxruntime.InferenceSession(str(Path('/models/faster_rcnn/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx')), None)
 
 
 # TODO : read mmdet config
