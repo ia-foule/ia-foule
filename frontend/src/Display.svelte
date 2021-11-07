@@ -39,12 +39,13 @@
   }
 
 
-  async function  draw(url, ctx, canvas) {
+  async function  draw(url, ctx, canvas, callback) {
     var img = new Image();
     img.onload = function() {
       // get the scale
       let [dx, dy, dWidth, dHeight] = computeScale(canvas.width, canvas.height, img.width, img.height);
       ctx.drawImage(img, dx, dy, dWidth, dHeight);
+      callback()
     };
     img.src = url;
   }
@@ -66,8 +67,13 @@
     ctxI.drawImage(video, dx, dy, dWidth, dHeight);
   }
 
-  export function drawDensity(url) {
-    draw(url, ctxD, canvasD)
+  export function drawDensity(url, nbPerson) {
+    const callback = () => {
+      ctxD.font = '35px serif';
+      ctxD.fillStyle = "red";
+      ctxD.fillText(nbPerson + (nbPerson === "0" ? ' personne' : ' personnes'), 10, canvasD.height - 10);
+    }
+    draw(url, ctxD, canvasD, callback)
   }
 
   export function adjust(dx, dy) {
@@ -93,8 +99,7 @@
     })
     ctxB.font = '35px serif';
     ctxB.fillStyle = "green";
-    console.log(bboxes.length);
-    ctxB.fillText(bboxes.length + ' person', 10, 50);
+    ctxB.fillText(bboxes.length + (bboxes.length === 0 ? ' personne' : ' personnes'), 10, 50);
   }
   // *** Wrappers of html methods to avoid to export it  ***
 

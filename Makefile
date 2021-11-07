@@ -33,9 +33,9 @@ export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onn
 
 export MODEL_TYPE = dsnet
 
-dummy		    := $(shell touch artifacts)
+dummy		  := $(shell touch artifacts)
 
-DC_UP_ARGS= --force-recreate #s--build
+DC_UP_ARGS = --force-recreate #s--build
 
 include ./artifacts
 
@@ -80,10 +80,10 @@ backend:
 test:
 	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml  run  --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
 
-exec:
+backend-exec:
 	$(COMPOSE) -f docker-compose.yml exec backend bash
 
-down:
+backend-down:
 	@$(COMPOSE) -f docker-compose.yml down
 
 ##############
@@ -98,6 +98,9 @@ frontend-dev-exec:
 	@echo "Listening on port: $(FRONTEND_PORT)"
 	@$(COMPOSE) -f docker-compose-frontend-dev.yml exec frontend-dev sh
 
+frontend-down:
+	@$(COMPOSE) -f docker-compose-frontend-dev.yml down
+
 
 ##############
 #  NGINX     #
@@ -109,9 +112,12 @@ nginx-dev-stop: network
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
 nginx-dev-exec:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml exec nginx-dev bash
+nginx-down:
+	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
 
 ##############
 #  GENERAL   #
 ##############
 
-dev: fdownload-models frontend-dev backend-dev nginx-dev
+dev: frontend-dev backend-dev nginx-dev
+down: frontend-down backend-down nginx-down

@@ -1,14 +1,13 @@
 import asyncio
 from typing import List, Tuple
 import requests
-import io, base64
+import io
 from PIL import Image, ImageOps
 import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, HTTPException, Header
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
-import matplotlib.pyplot as plt
 import time, sys, os
 
 from fastapi.logger import logger as fastapi_logger
@@ -18,7 +17,7 @@ from pathlib import Path
 
 from count import predict as predict_count
 from detect import predict as predict_detect
-
+from utils import array2url
 
 app = FastAPI()
 
@@ -34,7 +33,7 @@ async def receive(websocket: WebSocket):
     # Just a ping-pong to check the connection
     ws_text = await websocket.receive_text()
 
-async def detect(websocket: WebSocket):
+async def detect(websocket: WebSocket, density=False):
     # Detection is already made by client_ffmpeg, get binary frame and send through
     # websocket to the brower.
     p = Path('/tmp/frame.bin')
@@ -44,13 +43,15 @@ async def detect(websocket: WebSocket):
         if st_mtime_ns > st_mtime_ns_read:
             st_mtime_ns_read = p.stat().st_mtime_ns
             await websocket.send_bytes(p.read_bytes())
-            await websocket.send_text(Path('/tmp/count').read_text())
+            await websocket.send_text(Path('/tmp/nb_person').read_text())
+            if density:
+                await websocket.send_text(Path('/tmp/url').read_text())
 
 @app.websocket("/video-server")
-async def face_detection(websocket: WebSocket):
+async def face_detection(websocket: WebSocket, density: bool = False):
     await websocket.accept()
     await websocket.send_text("0")
-    detect_task = asyncio.create_task(detect(websocket))
+    detect_task = asyncio.create_task(detect(websocket, density))
     try:
         while True:
             await receive(websocket)
@@ -93,17 +94,7 @@ async def video_browser(websocket: WebSocket):
 ################
 # Other routes #
 ################
-def array2url(arr):
-    cmap = plt.get_cmap('jet')
-    rgba_img = cmap(arr / arr.max(), alpha=(arr != 0) * 1, bytes=True)
-    in_mem_file = io.BytesIO()
-    img = Image.fromarray(rgba_img, mode='RGBA')
-    img.save(in_mem_file, format = "PNG")
-    # reset file pointer to start
-    in_mem_file.seek(0)
-    img_bytes = in_mem_file.read()
-    url = base64.b64encode(img_bytes).decode('ascii')
-    return url
+
 
 @app.post("/image/")
 async def predict_on_image(density: bool = False,
