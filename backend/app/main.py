@@ -41,12 +41,13 @@ async def detect(websocket: WebSocket, density=False):
     while True:
         st_mtime_ns = p.stat().st_mtime_ns
         if st_mtime_ns > st_mtime_ns_read:
-            st_mtime_ns_read = p.stat().st_mtime_ns
-            await websocket.send_bytes(p.read_bytes())
+            st_mtime_ns_read = st_mtime_ns
+            await asyncio.sleep(0.1) # wait for ffmpeg process to write
+            await websocket.send_bytes(Path('/tmp/frame.bin').read_bytes())
             await websocket.send_text(Path('/tmp/nb_person').read_text())
             if density:
                 await websocket.send_text(Path('/tmp/url').read_text())
-
+                
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket, density: bool = False):
     await websocket.accept()
@@ -57,6 +58,7 @@ async def face_detection(websocket: WebSocket, density: bool = False):
             await receive(websocket)
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
+        detect_task.cancel()
         await websocket.close()
 
 ################

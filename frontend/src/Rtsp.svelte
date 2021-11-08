@@ -27,10 +27,10 @@ const startCounting = () => {
         URL.revokeObjectURL(event.data)
         //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
       } else {
-        if (event.data.length < 10) {
+        if (event.data.length < 5) {
           nbPerson = event.data;
         } else {
-          display.drawDensity('data:image/png;base64,' + event.data)
+          display.drawDensity('data:image/png;base64,' + event.data, nbPerson)
         }
       }
     });

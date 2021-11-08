@@ -39,7 +39,7 @@
   }
 
 
-  async function  draw(url, ctx, canvas, callback) {
+  async function  draw(url, ctx, canvas, callback=()=>void 0) {
     var img = new Image();
     img.onload = function() {
       // get the scale
@@ -49,12 +49,17 @@
     };
     img.src = url;
   }
+  export function cleanAllCanvas() {
+    ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
+    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+  }
 
   export function drawFromImg(url) {
     // Clear all canvas
     ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
-    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
-    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+    // ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    // ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     draw(url, ctxI, canvasI)
   }
 
@@ -68,6 +73,7 @@
   }
 
   export function drawDensity(url, nbPerson) {
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     const callback = () => {
       ctxD.font = '35px serif';
       ctxD.fillStyle = "red";
@@ -151,7 +157,7 @@
 
   .density {
     z-index: 1;
-    opacity:0.5;
+    opacity:0.4;
     }
 
   .bbox {

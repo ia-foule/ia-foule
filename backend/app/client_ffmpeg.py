@@ -19,6 +19,7 @@ def start_ffmpeg_process(in_filename, frame_rate):
         ffmpeg
         .input(in_filename)
         .output('pipe:', format='rawvideo', pix_fmt='rgb24', r="%s"%frame_rate)#, vsync="cfr")
+        .global_args("-fflags discardcorrupt")
         .compile()
     )
     return subprocess.Popen(args, stdout=subprocess.PIPE)
