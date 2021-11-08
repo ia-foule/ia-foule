@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.9'
 services:
    backend:
     image: datalab-mi/${APP}-backend
@@ -20,8 +20,13 @@ services:
      - MODEL_NAME_MMCN
      - MODEL_TYPE
      - FRAME_RATE
-
     command: ${COMMAND_PARAMS}
+    volumes: # Add tmpfs filesystem to store rtsp image
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 21474836 #20Mo
+          #mode: 700 # paranoid mode, acces to docker user only
 
 networks:
   default:

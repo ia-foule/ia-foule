@@ -3,12 +3,14 @@ import { onMount, onDestroy } from 'svelte';
 
 export let nbPerson;
 export let display;
+// boolean parameter to get crowd density
+export let density;
 let video;
 let socket;
 const PING_INTERVAL_MS = 1000; // Ping every 1 s
 
 const startCounting = () => {
-  socket = new WebSocket('ws://localhost/api/video-server');
+  socket = new WebSocket(`ws://localhost/api/video-server?density=${density}`);
   let intervalId;
   // Connection opened
   socket.addEventListener('open', function () {
@@ -25,7 +27,11 @@ const startCounting = () => {
         URL.revokeObjectURL(event.data)
         //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
       } else {
-        nbPerson = event.data;
+        if (event.data.length < 5) {
+          nbPerson = event.data;
+        } else {
+          display.drawDensity('data:image/png;base64,' + event.data, nbPerson)
+        }
       }
     });
 

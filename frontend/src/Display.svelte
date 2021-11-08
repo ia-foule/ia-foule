@@ -39,21 +39,27 @@
   }
 
 
-  async function  draw(url, ctx, canvas) {
+  async function  draw(url, ctx, canvas, callback=()=>void 0) {
     var img = new Image();
     img.onload = function() {
       // get the scale
       let [dx, dy, dWidth, dHeight] = computeScale(canvas.width, canvas.height, img.width, img.height);
       ctx.drawImage(img, dx, dy, dWidth, dHeight);
+      callback()
     };
     img.src = url;
+  }
+  export function cleanAllCanvas() {
+    ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
+    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
   }
 
   export function drawFromImg(url) {
     // Clear all canvas
     ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
-    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
-    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+    // ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    // ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     draw(url, ctxI, canvasI)
   }
 
@@ -66,8 +72,14 @@
     ctxI.drawImage(video, dx, dy, dWidth, dHeight);
   }
 
-  export function drawDensity(url) {
-    draw(url, ctxD, canvasD)
+  export function drawDensity(url, nbPerson) {
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+    const callback = () => {
+      ctxD.font = '35px serif';
+      ctxD.fillStyle = "red";
+      ctxD.fillText(nbPerson + (nbPerson === "0" ? ' personne' : ' personnes'), 10, canvasD.height - 10);
+    }
+    draw(url, ctxD, canvasD, callback)
   }
 
   export function adjust(dx, dy) {
@@ -93,8 +105,7 @@
     })
     ctxB.font = '35px serif';
     ctxB.fillStyle = "green";
-    console.log(bboxes.length);
-    ctxB.fillText(bboxes.length + ' person', 10, 50);
+    ctxB.fillText(bboxes.length + (bboxes.length === 0 ? ' personne' : ' personnes'), 10, 50);
   }
   // *** Wrappers of html methods to avoid to export it  ***
 
@@ -146,7 +157,7 @@
 
   .density {
     z-index: 1;
-    opacity:0.5;
+    opacity:0.4;
     }
 
   .bbox {

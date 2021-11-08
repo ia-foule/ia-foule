@@ -19,7 +19,7 @@
     nbPerson = result.nb_person
     if (density === true) {//&& ('density_map' in result) {
       //display.drawDensity(result.density_map)
-      display.drawDensity('data:image/png;base64,' + result.url)
+      display.drawDensity('data:image/png;base64,' + result.url, nbPerson)
     }
     if (detection === true) {//&& ('density_map' in result) {
       //display.drawDensity(result.density_map)
@@ -50,7 +50,7 @@
       let result = await response.json();
       nbPerson = result.nb_person
       if (density === true) {
-        display.drawDensity('data:image/png;base64,' + result.url)
+        display.drawDensity('data:image/png;base64,' + result.url, nbPerson)
       }
       if (detection === true) {
         display.drawBox(result.bboxes, result.width, result.height)

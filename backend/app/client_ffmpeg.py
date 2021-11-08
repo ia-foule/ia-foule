@@ -4,6 +4,7 @@ from count import predict
 from PIL import Image
 import os, io
 from pathlib import Path
+from utils import array2url
 
 def get_video_size(filename):
     probe = ffmpeg.probe(filename)
@@ -18,6 +19,7 @@ def start_ffmpeg_process(in_filename, frame_rate):
         ffmpeg
         .input(in_filename)
         .output('pipe:', format='rawvideo', pix_fmt='rgb24', r="%s"%frame_rate)#, vsync="cfr")
+        .global_args("-fflags discardcorrupt")
         .compile()
     )
     return subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -43,15 +45,19 @@ def process_frame(frame):
     '''Count people'''
     nb_person, density_map = predict(frame)
     print('%s persons'%nb_person)
-    p = Path('/tmp/count')
+    p = Path('/tmp/nb_person')
     p.write_text("%s"%nb_person)
+    # Save density_map in tmpfs volume as url
+    p = Path('/tmp/url')
+    url = array2url(density_map)
+    p.write_text(url)
     return frame
 
 def write_frame(frame):
     p = Path('/tmp/frame.bin')
     img_byte_arr = io.BytesIO()
     frame.save(img_byte_arr, format='jpeg')
-    print('save file')
+    print('save frame')
     p.write_bytes(img_byte_arr.getvalue())
 
 if __name__ == '__main__':
