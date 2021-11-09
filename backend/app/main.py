@@ -8,7 +8,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile, H
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
-import time, sys, os
+import time, sys, os, json
 
 from fastapi.logger import logger as fastapi_logger
 import logging
@@ -17,6 +17,8 @@ from pathlib import Path
 
 from count import predict as predict_count
 from detect import predict as predict_detect
+from fusion import predict as predict_fusion
+
 from utils import array2url
 
 app = FastAPI()
@@ -33,7 +35,7 @@ async def receive(websocket: WebSocket):
     # Just a ping-pong to check the connection
     ws_text = await websocket.receive_text()
 
-async def detect(websocket: WebSocket, density=False):
+async def detect(websocket: WebSocket, density=False, detection=False):
     # Detection is already made by client_ffmpeg, get binary frame and send through
     # websocket to the brower.
     p = Path('/tmp/frame.bin')
@@ -42,17 +44,16 @@ async def detect(websocket: WebSocket, density=False):
         st_mtime_ns = p.stat().st_mtime_ns
         if st_mtime_ns > st_mtime_ns_read:
             st_mtime_ns_read = st_mtime_ns
-            await asyncio.sleep(0.1) # wait for ffmpeg process to write
-            await websocket.send_bytes(Path('/tmp/frame.bin').read_bytes())
-            await websocket.send_text(Path('/tmp/nb_person').read_text())
-            if density:
-                await websocket.send_text(Path('/tmp/url').read_text())
-                
+            await asyncio.sleep(0.2) # wait for ffmpeg process to write
+            await websocket.send_bytes(p.read_bytes())
+            with Path('/tmp/result.json').open() as fp:
+                result = json.load(fp)
+            await websocket.send_json(result)
 @app.websocket("/video-server")
-async def face_detection(websocket: WebSocket, density: bool = False):
+async def face_detection(websocket: WebSocket, density: bool = False, detection: bool = False):
     await websocket.accept()
-    await websocket.send_text("0")
-    detect_task = asyncio.create_task(detect(websocket, density))
+    #await  websocket.send_json(json.dumps({'nb_person': 0}))
+    detect_task = asyncio.create_task(detect(websocket, density, detection))
     try:
         while True:
             await receive(websocket)
@@ -101,11 +102,23 @@ async def video_browser(websocket: WebSocket):
 @app.post("/image/")
 async def predict_on_image(density: bool = False,
                             detection: bool = False,
+                            fusion: bool =False,  # Run both and fuse their result
                             file: UploadFile = File(...)):
     if 'image' in file.content_type:
         content = await file.read()
         img = Image.open(io.BytesIO(content))
         img = img.convert('RGB')
+        if fusion:
+            nb_person, density_map, bboxes = predict_fusion(img)
+            result = {
+                    'nb_person' : nb_person,
+                    'nb_person_counted': int(density_map.sum()),
+                    'url': array2url(density_map),
+                    'bboxes':bboxes,
+                    'width': img.size[0],
+                    'height': img.size[1]
+                    }
+            return result
         # Prepare result
         result = {}
         if not density:
@@ -127,10 +140,22 @@ async def predict_on_image(density: bool = False,
 async def predict_on_url(url: str,
                         density: bool = False,  # Compute density map
                         detection: bool = False, # Run detection model
+                        fusion: bool =False,  # Run both and fuse their result
                         user_agent: Optional[str] = Header(None)):
     try:
         resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
+        if fusion:
+            nb_person, density_map, bboxes = predict_fusion(img)
+            result = {
+                    'nb_person' : nb_person,
+                    'nb_person_counted': int(density_map.sum()),
+                    'url': array2url(density_map),
+                    'bboxes':bboxes,
+                    'width': img.size[0],
+                    'height': img.size[1]
+                    }
+            return result
         # Prepare result
         result = {}
         if not density:
@@ -144,7 +169,6 @@ async def predict_on_url(url: str,
             bboxes = predict_detect(img)
             result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
         return result
-
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)

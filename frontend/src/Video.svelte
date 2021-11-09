@@ -7,6 +7,8 @@
   export let density;
   // boolean parameter to get bounding boxes from a detector
   export let detection;
+  // boolean parameter to fuse detection and count model
+  export let fusion;
 
   let files;
   let url;
@@ -66,14 +68,16 @@
     // blob image in RGBA
     let data = new FormData()
     data.append('file', blob)
-    let response = await fetch(`/api/image/?density=${density}&detection=${detection}`, {
+    let response = await fetch(`/api/image/?density=${density}&detection=${detection}&fusion=${fusion}`, {
             method: "POST",
             body: data
           })
     let result = await response.json();
     nbPerson = result.nb_person
     if (density === true) {
-      display.drawDensity('data:image/png;base64,' + result.url)
+      display.drawDensity('data:image/png;base64,' + result.url,
+      result.nb_person_counted || result.nb_person)
+
     }
     if (detection === true) {
       display.drawBox(result.bboxes, result.width, result.height)

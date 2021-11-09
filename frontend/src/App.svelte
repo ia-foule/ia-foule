@@ -27,7 +27,8 @@
 
 	let selected;
 	let density=true; // If density map is needed
-	let detection=true; // If density map is needed
+	let detection=true; // If detection bboxes is needed
+	let fusion=true; // The model type
 
 	let isSubmit=false;
 
@@ -71,22 +72,22 @@
 
 {#if isSubmit === true }
 	{#if selected.class === 'Image'}
-		<Image bind:nbPerson={nbPerson} {display} {density} {detection}/>
+		<Image bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'Camera' }
-		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display}/>
+		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display} {fusion}/>
 	{:else if selected.class === 'Video' }
-		<Video  bind:nbPerson={nbPerson} {display} {density} {detection}/>
+		<Video  bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'VideoServer' }
 		<VideoServer bind:nbPerson={nbPerson} {display}/>
 	{:else if selected.class === 'Rtsp' }
-		<Rtsp bind:nbPerson={nbPerson} {display} {density}/>
+		<Rtsp bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{/if}
 
 {/if}
 
 {#if nbPerson }
-	<h2>Résultat</h2>
-	<p> {nbPerson} {nbPerson === "0" ? 'personne' : 'personnes'} </p>
+	<h2>Result</h2>
+	<p> {nbPerson} {nbPerson <= 0 ? 'personne' : 'personnes'} </p>
 {/if}
 
 <h2>Settings</h2>
@@ -100,7 +101,10 @@
 	Display detection bboxes
 </label>
 
-
+<label>
+	<input type=checkbox bind:checked={fusion}>
+	Fuse detection and count model
+</label>
 </aside>
 
 <main>

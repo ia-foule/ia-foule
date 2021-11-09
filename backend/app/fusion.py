@@ -16,7 +16,9 @@ Count\detection | 0-d1 | d1-d2 | d2-+oo
 """
 def predict(img):
     nb_person_counted, density_map = predict_count(img)
-    nb_person_detected = len(predict_detect(img))
+    bboxes = predict_detect(img)
+
+    nb_person_detected = len(bboxes)
 
     case_d =  np.array([0,threshold_d1,threshold_d2]) - nb_person_detected
     case_d = np.where(case_d < 0, case_d, - np.inf).argmax() + 1
@@ -29,9 +31,9 @@ def predict(img):
     if case_cd == 11:
         nb_person = nb_person_detected
     elif case_cd == 12:
-        nb_person = (nb_person_detected + nb_person_counted) // 2
+        nb_person = nb_person_detected
     elif case_cd == 13:
-        nb_person = nb_person_counted
+        nb_person = nb_person_detected
     elif case_cd == 21:
         nb_person = (nb_person_detected + nb_person_counted) // 2
     elif case_cd == 22:
@@ -46,4 +48,4 @@ def predict(img):
         nb_person = nb_person_counted
     else:
         raise Exception('Case not supported')
-    return nb_person, density_map
+    return nb_person, density_map, bboxes
