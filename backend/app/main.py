@@ -36,15 +36,22 @@ async def receive(websocket: WebSocket):
     # Just a ping-pong to check the connection
     ws_text = await websocket.receive_text()
 
-async def detect(websocket: WebSocket, process, density=False, detection=False):
+async def detect(websocket: WebSocket, density=False, detection=False):
+    await websocket.send_text('start ')
 
-
+    RTSP_ADDR = os.getenv("RTSP_ADDR")
+    frame_rate =  os.getenv("FRAME_RATE", 1)
+    width, height = get_video_size(RTSP_ADDR)
+    process = start_ffmpeg_process(RTSP_ADDR, frame_rate)
+    await websocket.send_text('0')
     while True:
         frame = read_frame(process, width, height)
+        await websocket.send_text('1')
+
         if frame is not None:
-            nb_person, density_map, bboxes = predict(frame)
-            print('%s persons'%nb_person)
-            # Save other output in tmpfs volume
+            nb_person, density_map, bboxes = predict_fusion(frame)
+            await websocket.send_text('2')
+
             result = {'nb_person': nb_person,
                     'nb_person_counted': int(density_map.sum()),
                     'url': array2url(density_map),
@@ -55,22 +62,19 @@ async def detect(websocket: WebSocket, process, density=False, detection=False):
             frame.save(img_byte_arr, format='jpeg')
             await websocket.send_bytes(img_byte_arr.getvalue())
             await websocket.send_json(result)
+    process.wait()
 
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket, density: bool = False, detection: bool = False):
     await websocket.accept()
     #await  websocket.send_json(json.dumps({'nb_person': 0}))
-    RTSP_ADDR = os.getenv("RTSP_ADDR")
-    frame_rate =  os.getenv("FRAME_RATE", 1)
-    width, height = get_video_size(RTSP_ADDR)
-    process = start_ffmpeg_process(RTSP_ADDR, frame_rate)
-    detect_task = asyncio.create_task(detect(websocket,process, density, detection))
+
+    detect_task = asyncio.create_task(detect(websocket, density, detection))
     try:
         while True:
             await receive(websocket)
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
-        process.wait()
         detect_task.cancel()
         await websocket.close()
 
