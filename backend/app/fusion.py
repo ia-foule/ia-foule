@@ -3,10 +3,10 @@ from detect import predict as predict_detect
 
 import numpy as np
 
-threshold_d1 = 20
-threshold_d2 = 50
-threshold_c1 = 50
-threshold_c2 = 90
+threshold_d1 = 5
+threshold_d2 = 20
+threshold_c1 = 30
+threshold_c2 = 60
 
 """
 Count\detection | 0-d1 | d1-d2 | d2-+oo
@@ -30,19 +30,19 @@ def predict(img):
 
     if case_cd == 11:
         nb_person = nb_person_detected
-    elif case_cd == 12:
-        nb_person = nb_person_detected
-    elif case_cd == 13:
-        nb_person = nb_person_detected
     elif case_cd == 21:
+        nb_person = nb_person_detected
+    elif case_cd == 31:
+        nb_person = nb_person_counted
+    elif case_cd == 12:
         nb_person = (nb_person_detected + nb_person_counted) // 2
     elif case_cd == 22:
         nb_person = (nb_person_detected + nb_person_counted) // 2
-    elif case_cd == 23:
-        nb_person = nb_person_counted
-    elif case_cd == 31:
-        nb_person = nb_person_counted
     elif case_cd == 32:
+        nb_person = nb_person_counted
+    elif case_cd == 13:
+        nb_person = nb_person_counted
+    elif case_cd == 23:
         nb_person = nb_person_counted
     elif case_cd == 33:
         nb_person = nb_person_counted

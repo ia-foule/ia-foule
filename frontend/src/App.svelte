@@ -85,9 +85,9 @@
 
 {/if}
 
-{#if nbPerson }
+{#if nbPerson !== undefined }
 	<h2>Result</h2>
-	<p> {nbPerson} {nbPerson <= 0 ? 'personne' : 'personnes'} </p>
+	<p> {nbPerson} {nbPerson <= 1 ? 'personne' : 'personnes'} </p>
 {/if}
 
 <h2>Settings</h2>
