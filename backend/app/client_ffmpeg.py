@@ -1,8 +1,9 @@
 import ffmpeg
 import subprocess
-from count import predict
+from fusion import predict
+
 from PIL import Image
-import os, io
+import os, io, json
 from pathlib import Path
 from utils import array2url
 
@@ -19,7 +20,6 @@ def start_ffmpeg_process(in_filename, frame_rate):
         ffmpeg
         .input(in_filename)
         .output('pipe:', format='rawvideo', pix_fmt='rgb24', r="%s"%frame_rate)#, vsync="cfr")
-        .global_args("-fflags discardcorrupt")
         .compile()
     )
     return subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -43,14 +43,21 @@ def read_frame(process1, width, height):
 
 def process_frame(frame):
     '''Count people'''
-    nb_person, density_map = predict(frame)
+    nb_person, density_map, bboxes = predict(frame)
     print('%s persons'%nb_person)
-    p = Path('/tmp/nb_person')
-    p.write_text("%s"%nb_person)
-    # Save density_map in tmpfs volume as url
-    p = Path('/tmp/url')
+    # Save other output in tmpfs volume
     url = array2url(density_map)
-    p.write_text(url)
+    result = {'nb_person': nb_person,
+            'nb_person_counted': int(density_map.sum()),
+            'url': url,
+            'bboxes':bboxes,
+            'width': frame.size[0],
+            'height': frame.size[1]}
+    # Save bboxes in tmpfs volume as json
+    p = Path('/tmp/result.json')
+    with p.open('w') as fp:
+        json.dump(result, fp)
+    print("save bboxes")
     return frame
 
 def write_frame(frame):

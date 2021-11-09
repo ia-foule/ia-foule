@@ -5,12 +5,14 @@ export let nbPerson;
 export let display;
 // boolean parameter to get crowd density
 export let density;
+export let detection;
+export let fusion;
 let video;
 let socket;
 const PING_INTERVAL_MS = 1000; // Ping every 1 s
 
 const startCounting = () => {
-  socket = new WebSocket(`ws://localhost/api/video-server?density=${density}`);
+  socket = new WebSocket(`ws://localhost/api/video-server?density=${density}&detection=${detection}&fusion=${fusion}`);
   let intervalId;
   // Connection opened
   socket.addEventListener('open', function () {
@@ -25,12 +27,17 @@ const startCounting = () => {
       if (event.data instanceof Blob) {
         display.drawFromImg(URL.createObjectURL( event.data ))
         URL.revokeObjectURL(event.data)
-        //img.src = URL.createObjectURL( new Blob( [ event.data ] ) );
       } else {
-        if (event.data.length < 5) {
-          nbPerson = event.data;
-        } else {
-          display.drawDensity('data:image/png;base64,' + event.data, nbPerson)
+        const result = JSON.parse(event.data)
+        if (result.hasOwnProperty("nb_person")) {
+          nbPerson = result.nb_person
+        }
+        if (density === true && result.hasOwnProperty("url")) {
+          display.drawDensity('data:imasge/png;base64,' + result.url,
+            result.nb_person_counted || result.nb_person)
+        }
+        if (detection === true  && result.hasOwnProperty("bboxes")) {
+          display.drawBox(result.bboxes, result.width, result.height)
         }
       }
     });

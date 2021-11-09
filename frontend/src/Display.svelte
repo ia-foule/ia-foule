@@ -77,7 +77,7 @@
     const callback = () => {
       ctxD.font = '35px serif';
       ctxD.fillStyle = "red";
-      ctxD.fillText(nbPerson + (nbPerson === "0" ? ' personne' : ' personnes'), 10, canvasD.height - 10);
+      ctxD.fillText(nbPerson + (nbPerson <= 1 ? ' personne' : ' personnes'), 10, canvasD.height - 10);
     }
     draw(url, ctxD, canvasD, callback)
   }
@@ -105,7 +105,7 @@
     })
     ctxB.font = '35px serif';
     ctxB.fillStyle = "green";
-    ctxB.fillText(bboxes.length + (bboxes.length === 0 ? ' personne' : ' personnes'), 10, 50);
+    ctxB.fillText(bboxes.length + (bboxes.length <= 1 ? ' personne' : ' personnes'), 10, 50);
   }
   // *** Wrappers of html methods to avoid to export it  ***
 
