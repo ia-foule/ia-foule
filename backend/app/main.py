@@ -18,6 +18,7 @@ from pathlib import Path
 from count import predict as predict_count
 from detect import predict as predict_detect
 from fusion import predict as predict_fusion
+from client_ffmpeg import get_video_size, start_ffmpeg_process
 
 from utils import array2url
 
@@ -35,30 +36,41 @@ async def receive(websocket: WebSocket):
     # Just a ping-pong to check the connection
     ws_text = await websocket.receive_text()
 
-async def detect(websocket: WebSocket, density=False, detection=False):
-    # Detection is already made by client_ffmpeg, get binary frame and send through
-    # websocket to the brower.
-    p = Path('/tmp/frame.bin')
-    st_mtime_ns_read = 0
+async def detect(websocket: WebSocket, process, density=False, detection=False):
+
+
     while True:
-        st_mtime_ns = p.stat().st_mtime_ns
-        if st_mtime_ns > st_mtime_ns_read:
-            st_mtime_ns_read = st_mtime_ns
-            await asyncio.sleep(0.2) # wait for ffmpeg process to write
-            await websocket.send_bytes(p.read_bytes())
-            with Path('/tmp/result.json').open() as fp:
-                result = json.load(fp)
+        frame = read_frame(process, width, height)
+        if frame is not None:
+            nb_person, density_map, bboxes = predict(frame)
+            print('%s persons'%nb_person)
+            # Save other output in tmpfs volume
+            result = {'nb_person': nb_person,
+                    'nb_person_counted': int(density_map.sum()),
+                    'url': array2url(density_map),
+                    'bboxes':bboxes,
+                    'width': frame.size[0],
+                    'height': frame.size[1]}
+            img_byte_arr = io.BytesIO()
+            frame.save(img_byte_arr, format='jpeg')
+            await websocket.send_bytes(img_byte_arr.getvalue())
             await websocket.send_json(result)
+
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket, density: bool = False, detection: bool = False):
     await websocket.accept()
     #await  websocket.send_json(json.dumps({'nb_person': 0}))
-    detect_task = asyncio.create_task(detect(websocket, density, detection))
+    RTSP_ADDR = os.getenv("RTSP_ADDR")
+    frame_rate =  os.getenv("FRAME_RATE", 1)
+    width, height = get_video_size(RTSP_ADDR)
+    process = start_ffmpeg_process(RTSP_ADDR, frame_rate)
+    detect_task = asyncio.create_task(detect(websocket,process, density, detection))
     try:
         while True:
             await receive(websocket)
     except WebSocketDisconnect: # Check the connection with the received socket
         print('WS disco')
+        process.wait()
         detect_task.cancel()
         await websocket.close()
 
