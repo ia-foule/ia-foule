@@ -15,6 +15,7 @@
   let url; //='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Crowd_Tokyo.jpg/1280px-Crowd_Tokyo.jpg';
 
   const onUrlCopied = async () => {
+    display.cleanAllCanvas()
     display.drawFromImg(url)
     let response = await fetch(`/api/prediction/?url=${url}&density=${density}&detection=${detection}&fusion=${fusion}`)
     let result = await response.json();
@@ -31,6 +32,7 @@
   }
 
   const onFileSelected = async (e) => {
+    display.cleanAllCanvas()
     let image = e.target.files[0];
     let reader = new FileReader();
     reader.readAsDataURL(image);

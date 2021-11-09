@@ -16,14 +16,16 @@
 	];
 
 	// Add video device of the client
-	navigator.mediaDevices.enumerateDevices().then((devices) => {
-		for (const device of devices) {
-			if (device.kind === 'videoinput' && device.deviceId) {
-				const option = { id: device.deviceId, text: device.label, class: `Camera` }
-				options = [...options, option];
+	if (navigator.mediaDevices !== undefined) {
+		navigator.mediaDevices.enumerateDevices().then((devices) => {
+			for (const device of devices) {
+				if (device.kind === 'videoinput' && device.deviceId) {
+					const option = { id: device.deviceId, text: device.label, class: `Camera` }
+					options = [...options, option];
+				}
 			}
-		}
-	});
+		});
+	}
 
 	let selected;
 	let density=true; // If density map is needed
@@ -37,6 +39,8 @@
 	let display; // the display component where result image is drawn
 	function handleChange() {
 		console.log(selected);
+		isSubmit = false
+		display.cleanAllCanvas()
 	}
 
 	async function handleSubmit() {
