@@ -27,11 +27,12 @@ export PORT = 80
 
 # Choose the model type (mmcn/dsnet)
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
+export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
 export MODEL_NAME_DSNET = dsnet_shtechBv11_da_ri.onnx
 export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
 export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx
 
-export MODEL_TYPE = dsnet
+export MODEL_TYPE = mobilecount
 
 dummy		  := $(shell touch artifacts)
 
@@ -58,11 +59,14 @@ models/mmcn:
 models/dsnet:
 	mkdir -p models/dsnet/
 	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P models/dsnet
+models/mobilecount:
+		mkdir -p models/mobilecount/
+		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P models/mobilecount
 models/detector:
 		mkdir -p models/dsnet/
 		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P models/faster_rcnn
 
-make download-models:  models/mmcn models/dsnet models/detector
+make download-models:  models/mmcn models/dsnet models/mobilecount models/detector
 
 
 #############
