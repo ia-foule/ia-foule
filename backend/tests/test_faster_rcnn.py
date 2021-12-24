@@ -11,3 +11,4 @@ def test_predict():
     exec_time = time.time() - t1
     print("execution time: %s"%exec_time)
     assert len(result) == 17
+s

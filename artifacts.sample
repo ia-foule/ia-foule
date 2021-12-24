@@ -1,5 +1,6 @@
 export DC_UP_ARGS=#--force-recreate# --build
 export RTSP_ADDR=rtsp://....
-export MODEL_TYPE=
+export MODEL_TYPE=mobilecount
+export MODEL_TYPE_DETECTOR=yolov3
 export LOG_LEVEL=info#error
 export FRAME_RATE=0.15
