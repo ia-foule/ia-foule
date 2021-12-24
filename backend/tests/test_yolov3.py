@@ -1,4 +1,4 @@
-from detect import predict
+from yolov3 import predict
 from PIL import Image, ImageOps
 from pathlib import Path
 import time
@@ -10,4 +10,4 @@ def test_predict():
     result = predict(img)
     exec_time = time.time() - t1
     print("execution time: %s"%exec_time)
-    assert len(result) == 17
+    assert len(result) == 18
