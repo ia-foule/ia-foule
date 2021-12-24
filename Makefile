@@ -32,6 +32,7 @@ export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
 export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx
 
 export MODEL_TYPE = dsnet
+export MODEL_TYPE_DETECTOR = yolov3
 
 dummy		  := $(shell touch artifacts)
 
@@ -61,6 +62,9 @@ models/dsnet:
 models/detector:
 		mkdir -p models/dsnet/
 		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P models/faster_rcnn
+models/yolov3:
+		mkdir -p models/yolov3/
+		wget https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov3/model/yolov3-10.onnx -P models/yolov3
 
 make download-models:  models/mmcn models/dsnet models/detector
 
