@@ -20,6 +20,7 @@ services:
      - MODEL_NAME_DSNET
      - MODEL_NAME_MMCN
      - MODEL_TYPE
+     - MODEL_TYPE_DETECTOR
      - FRAME_RATE
     command: ${COMMAND_PARAMS}
     volumes: # Add tmpfs filesystem to store rtsp image
