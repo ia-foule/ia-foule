@@ -7,7 +7,7 @@ def array2url(arr):
     understood by html <img src=url>
     """
     cmap = plt.get_cmap('jet')
-    rgba_img = cmap(arr / arr.max(), alpha=(arr != 0) * 1, bytes=True)
+    rgba_img = cmap(arr / arr.max(), alpha= arr / arr.max(), bytes=True)
     in_mem_file = io.BytesIO()
     img = Image.fromarray(rgba_img, mode='RGBA')
     img.save(in_mem_file, format = "PNG")

@@ -157,7 +157,7 @@
 
   .density {
     z-index: 1;
-    opacity:0.4;
+    opacity:1;
     }
 
   .bbox {
