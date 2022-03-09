@@ -18,7 +18,7 @@ def get_video_size(filename):
 def start_ffmpeg_process(in_filename, frame_rate):
     args = (
         ffmpeg
-        .input(in_filename)
+        .input(in_filename, sdp_file='./video.sdp')
         .output('pipe:', format='rawvideo', pix_fmt='rgb24', r="%s"%frame_rate)#, vsync="cfr")
         .compile()
     )

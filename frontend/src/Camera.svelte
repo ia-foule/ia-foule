@@ -4,6 +4,13 @@ import { onMount, onDestroy } from 'svelte';
 export let deviceId;
 export let nbPerson;
 export let display;
+
+export let density;
+// boolean parameter to get bounding boxes from a detector
+export let detection;
+// boolean parameter to fuse detection and count model
+export let fusion;
+
 let video;
 let socket;
 
@@ -31,7 +38,7 @@ const startCounting = (video, deviceId) => {
         // Send an image in the WebSocket every 42 ms
         intervalId = setInterval(() => {
           // Create a virtual canvas to draw current video image
-          display.drawImage(video)
+          display.drawFromVideo(video)
 
           // Convert it to JPEG and send it to the WebSocket
           display.toBlob((blob) => socket.send(blob), 'image/jpeg');

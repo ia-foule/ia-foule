@@ -78,7 +78,7 @@
 	{#if selected.class === 'Image'}
 		<Image bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'Camera' }
-		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display} {fusion}/>
+		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'Video' }
 		<Video  bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'VideoServer' }

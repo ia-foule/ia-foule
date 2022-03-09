@@ -9,7 +9,7 @@ export let detection;
 export let fusion;
 let video;
 let socket;
-const PING_INTERVAL_MS = 1000; // Ping every 1 s
+const PING_INTERVAL_MS = 500; // Ping every 0.5s
 
 const startCounting = () => {
   socket = new WebSocket(`ws://localhost/api/video-server?density=${density}&detection=${detection}&fusion=${fusion}`);
