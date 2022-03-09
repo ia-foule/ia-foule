@@ -25,13 +25,18 @@ export FRONTEND_HOST = frontend
 # NGINX
 export PORT = 80
 
-# Choose the model type (mmcn/dsnet)
+# RTSP SERVER FOR TESTING
+export RTSP_PORT=8554
+export RTSP_ADDR=rtsp://vlc-server:8554/test.sdp
+
+# DATA AND MODELS
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
 export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
 export MODEL_NAME_DSNET = dsnet_shtechBv11_da_ri.onnx
 export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
 export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx
 
+# CHOOSE THE MODELS TO USE
 export MODEL_TYPE = mobilecount
 export MODEL_TYPE_DETECTOR = yolov3
 
@@ -39,6 +44,7 @@ dummy		  := $(shell touch artifacts)
 
 DC_UP_ARGS = --force-recreate #s--build
 
+# REMAPPING SOME VARIABLES
 include ./artifacts
 
 #############
@@ -88,6 +94,10 @@ backend:
 test:
 	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml  run  --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
 
+test-rstp: up-vlc-server
+	@echo "Vlc rtsp server is running : open rtsp://localhost:$(RTSP_PORT)/test.sdp"
+	@echo "Test the iafoule app by choosing Rtsp"
+
 backend-exec:
 	$(COMPOSE) -f docker-compose.yml exec backend bash
 
@@ -122,6 +132,19 @@ nginx-dev-exec:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml exec nginx-dev bash
 nginx-down:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
+
+
+##############
+# VLC-SERVER #
+##############
+vlc-server-build:
+	@$(COMPOSE) -f docker-compose-vlc-server.yml build
+vlc-server-up:
+	@$(COMPOSE) -f docker-compose-vlc-server.yml up -d $(DC_UP_ARGS)
+vlc-server-logs:
+	@$(COMPOSE) logs vlc-server
+vlc-server-down:
+	@$(COMPOSE) -f docker-compose-vlc-server.yml down
 
 ##############
 #  GENERAL   #

@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+   vlc-server:
+    image: ghcr.io/ia-foule/vlc-server:latest
+    container_name: vlc-server
+    command:
+      /data/5.mp4 --loop :sout=#gather:rtp{sdp=rtsp://:8554/test.sdp} :network-caching=1500 :sout-all :sout-keep
+    ports:
+      - "${RTSP_PORT}:8554"
+    volumes:
+      - ./backend/tests/data:/data
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}
