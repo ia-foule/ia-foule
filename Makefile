@@ -35,6 +35,7 @@ export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
 export MODEL_NAME_DSNET = dsnet_shtechBv11_da_ri.onnx
 export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
 export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx
+export MODEL_PATH=${CURRENT_PATH}/models
 
 # CHOOSE THE MODELS TO USE
 export MODEL_TYPE = mobilecount
@@ -60,23 +61,23 @@ network:
 #  Models   #
 #############
 
-models/mmcn:
-	mkdir -p models/mmcn/
-	wget $(OVH_BUCKET)/$(MODEL_NAME_MMCN) -P models/mmcn
-models/dsnet:
-	mkdir -p models/dsnet/
-	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P models/dsnet
-models/mobilecount:
-		mkdir -p models/mobilecount/
-		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P models/mobilecount
-models/detector:
-		mkdir -p models/faster_rcnn/
-		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P models/faster_rcnn
-models/yolov3:
-		mkdir -p models/yolov3/
-		wget $(OVH_BUCKET)/models/yolov3-10.onnx -P models/yolov3
+$(MODEL_PATH)/mmcn:
+	mkdir -p $(MODEL_PATH)/mmcn/
+	wget $(OVH_BUCKET)/$(MODEL_NAME_MMCN) -P $(MODEL_PATH)/mmcn
+$(MODEL_PATH)/dsnet:
+	mkdir -p $(MODEL_PATH)/dsnet/
+	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P $(MODEL_PATH)/dsnet
+$(MODEL_PATH)/mobilecount:
+		mkdir -p $(MODEL_PATH)/mobilecount/
+		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P $(MODEL_PATH)/mobilecount
+$(MODEL_PATH)/faster_rcnn:
+		mkdir -p $(MODEL_PATH)/faster_rcnn/
+		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P $(MODEL_PATH)/faster_rcnn
+$(MODEL_PATH)/yolov3:
+		mkdir -p $(MODEL_PATH)/yolov3/
+		wget $(OVH_BUCKET)/models/yolov3-10.onnx -P $(MODEL_PATH)/yolov3
 
-make download-models:  models/mmcn models/dsnet models/mobilecount models/detector
+make download-models: $(MODEL_PATH)/mmcn $(MODEL_PATH)/dsnet $(MODEL_PATH)/mobilecount $(MODEL_PATH)/faster_rcnn $(MODEL_PATH)/yolov3
 
 #############
 #  Backend  #
