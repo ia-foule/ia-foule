@@ -28,7 +28,7 @@ export PORT = 80
 # RTSP SERVER FOR TESTING
 export RTSP_PORT=8554
 export RTSP_ADDR=rtsp://vlc-server:8554/test.sdp
-
+export VLC_DATA_PATH=${CURRENT_PATH}/backend/tests/data
 # DATA AND MODELS
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
 export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
@@ -70,14 +70,13 @@ models/mobilecount:
 		mkdir -p models/mobilecount/
 		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P models/mobilecount
 models/detector:
-		mkdir -p models/dsnet/
+		mkdir -p models/faster_rcnn/
 		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P models/faster_rcnn
 models/yolov3:
 		mkdir -p models/yolov3/
-		wget https://github.com/onnx/models/raw/master/vision/object_detection_segmentation/yolov3/model/yolov3-10.onnx -P models/yolov3
+		wget $(OVH_BUCKET)/models/yolov3-10.onnx -P models/yolov3
 
 make download-models:  models/mmcn models/dsnet models/mobilecount models/detector
-
 
 #############
 #  Backend  #
@@ -137,9 +136,12 @@ nginx-down:
 ##############
 # VLC-SERVER #
 ##############
+$(VLC_DATA_PATH)/5.mp4:
+	wget $(OVH_BUCKET)/videos/5.mp4 -P $(VLC_DATA_PATH)
+
 vlc-server-build:
 	@$(COMPOSE) -f docker-compose-vlc-server.yml build
-vlc-server-up:
+vlc-server-up: $(VLC_DATA_PATH)/5.mp4
 	@$(COMPOSE) -f docker-compose-vlc-server.yml up -d $(DC_UP_ARGS)
 vlc-server-logs:
 	@$(COMPOSE) logs vlc-server
