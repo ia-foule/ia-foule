@@ -12,7 +12,7 @@ def get_video_size(filename):
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
     width = int(video_info['width'])
     height = int(video_info['height'])
-    frame_rate = int(video_info['r_frame_rate'].split('/')[0])
+    frame_rate = int(int(video_info['r_frame_rate'].split('/')[0]) / int(video_info['r_frame_rate'].split('/')[1]))
     return width, height, frame_rate
 
 
