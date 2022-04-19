@@ -4,9 +4,9 @@ services:
     image: ghcr.io/ia-foule/vlc-server:latest
     container_name: vlc-server
     command:
-      /data/5.mp4 --loop :sout=#gather:rtp{sdp=rtsp://:8554/test.sdp} :network-caching=1500 :sout-all :sout-keep
+      /data/5.mp4 --loop :sout=#gather:rtp{sdp=rtsp://:554/test.sdp} :network-caching=1500 :sout-all :sout-keep
     ports:
-      - "${RTSP_PORT}:8554"
+      - "${RTSP_PORT}:554"
     volumes:
       - ${VLC_DATA_PATH}:/data
 

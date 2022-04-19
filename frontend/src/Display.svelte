@@ -58,8 +58,8 @@
   export function drawFromImg(url) {
     // Clear all canvas
     ctxI.clearRect(0, 0, canvasI.width, canvasI.height)
-    // ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
-    // ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
+    ctxB.clearRect(0, 0, canvasB.width, canvasB.height)
+    ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     draw(url, ctxI, canvasI)
   }
 

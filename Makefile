@@ -26,7 +26,7 @@ export FRONTEND_HOST = frontend
 export PORT = 80
 
 # RTSP SERVER FOR TESTING
-export RTSP_PORT=8554
+export RTSP_PORT=8854
 export RTSP_ADDR=rtsp://vlc-server:8554/test.sdp
 export VLC_DATA_PATH=${CURRENT_PATH}/backend/tests/data
 # DATA AND MODELS
@@ -82,6 +82,9 @@ make download-models: $(MODEL_PATH)/mmcn $(MODEL_PATH)/dsnet $(MODEL_PATH)/mobil
 #############
 #  Backend  #
 #############
+
+backend-build:
+	@$(COMPOSE) -f  docker-compose.yml build
 
 backend-dev: network
 	@echo "Listening on port: $(BACKEND_PORT)"
