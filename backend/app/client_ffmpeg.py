@@ -12,14 +12,15 @@ def get_video_size(filename):
     video_info = next(s for s in probe['streams'] if s['codec_type'] == 'video')
     width = int(video_info['width'])
     height = int(video_info['height'])
-    return width, height
+    frame_rate = int(int(video_info['r_frame_rate'].split('/')[0]) / int(video_info['r_frame_rate'].split('/')[1]))
+    return width, height, frame_rate
 
 
-def start_ffmpeg_process(in_filename, frame_rate):
+def start_ffmpeg_process(in_filename):
     args = (
         ffmpeg
         .input(in_filename)
-        .output('pipe:', format='rawvideo', pix_fmt='rgb24', r="%s"%frame_rate)#, vsync="cfr")
+        .output('pipe:', format='rawvideo', pix_fmt='rgb24')#, vsync="cfr")
         .compile()
     )
     return subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -70,12 +71,16 @@ def write_frame(frame):
 if __name__ == '__main__':
     RTSP_ADDR = os.getenv("RTSP_ADDR")
     print(RTSP_ADDR)
-    frame_rate =  os.getenv("FRAME_RATE", 1)
-    width, height = get_video_size(RTSP_ADDR)
-    process = start_ffmpeg_process(RTSP_ADDR, frame_rate)
+    frame_rate =  int(os.getenv("FRAME_RATE", 1))
+    width, height, fps = get_video_size(RTSP_ADDR)
+    print(frame_rate, fps )
+    nb_frame_modulo = int(fps * frame_rate)
+    process = start_ffmpeg_process(RTSP_ADDR)
+    nb_frame = 0
     while True:
         in_frame = read_frame(process, width, height)
-        if in_frame is not None:
+        nb_frame += 1
+        if (in_frame is not None) and (nb_frame % nb_frame_modulo == 0):
             out_frame = process_frame(in_frame)
             write_frame(out_frame)
             print('new frame')

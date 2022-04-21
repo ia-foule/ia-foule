@@ -41,14 +41,17 @@ async def detect(websocket: WebSocket, density=False, detection=False):
     p = Path('/tmp/frame.bin')
     st_mtime_ns_read = 0
     while True:
+        await asyncio.sleep(0.1)
         st_mtime_ns = p.stat().st_mtime_ns
+        print(st_mtime_ns)
         if st_mtime_ns > st_mtime_ns_read:
             st_mtime_ns_read = st_mtime_ns
-            await asyncio.sleep(0.2) # wait for ffmpeg process to write
             await websocket.send_bytes(p.read_bytes())
+            await asyncio.sleep(0.2) # wait for ffmpeg process to write
             with Path('/tmp/result.json').open() as fp:
                 result = json.load(fp)
             await websocket.send_json(result)
+
 @app.websocket("/video-server")
 async def face_detection(websocket: WebSocket, density: bool = False, detection: bool = False):
     await websocket.accept()
