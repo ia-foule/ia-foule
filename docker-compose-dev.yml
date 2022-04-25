@@ -5,7 +5,6 @@ services:
     volumes:
       - ./backend/app:/app/
       - ./backend/tests/:/app/tests/
-      - ./models:/models/
       - ./imgs:/imgs/
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"

@@ -2,6 +2,7 @@ SHELL = /bin/bash
 
 export CURRENT_PATH := $(shell pwd)
 export APP = ia-foule
+export APP_VERSION := 1.0
 # this is usefull with most python apps in dev mode because if stdout is
 # buffered logs do not shows in realtime
 export PYTHONUNBUFFERED=1
@@ -29,6 +30,11 @@ export PORT = 80
 export RTSP_PORT=8854
 export RTSP_ADDR=rtsp://vlc-server:8554/test.sdp
 export VLC_DATA_PATH=${CURRENT_PATH}/backend/tests/data
+
+# BUILD OPTIONS
+export BUILD_DIR = ${CURRENT_PATH}/${APP}-build
+export FILE_FRONTEND_DIST_APP_VERSION = $(APP)-$(APP_VERSION)-frontend-dist.tar.gz
+
 # DATA AND MODELS
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
 export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
@@ -92,7 +98,7 @@ backend-dev: network
 
 backend:
 	@echo "Listening on port: $(BACKEND_PORT)"
-	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d
+	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d $(DC_UP_ARGS)
 
 test:
 	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml  run  --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
@@ -133,10 +139,14 @@ nginx-dev-stop: network
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
 nginx-dev-exec:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml exec nginx-dev bash
-nginx-down:
+nginx-dev-down:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
-
-
+	nginx-dev: network
+		@$(COMPOSE) -f docker-compose-nginx.yml up -d $(DC_UP_ARGS)
+nginx: network
+	@$(COMPOSE) -f docker-compose-nginx.yml up -d $(DC_UP_ARGS)
+nginx-dev-exec:
+	@$(COMPOSE) -f docker-compose-nginx.yml exec nginx bash
 ##############
 # VLC-SERVER #
 ##############
@@ -152,9 +162,35 @@ vlc-server-logs:
 vlc-server-down:
 	@$(COMPOSE) -f docker-compose-vlc-server.yml down
 
+###############
+# BUILD STAGE #
+###############
+build: frontend-build nginx-build
+
+frontend-build: network frontend-build-dist $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION)
+
+nginx-build:
+	@echo building ${APP} nginx
+	cp $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION) nginx/
+	@$(COMPOSE) -f docker-compose-nginx.yml build $(DC_BUILD_ARGS)
+
+frontend-build-dist:
+	@echo building ${APP} frontend in ${FRONTEND}
+	@$(COMPOSE) -f docker-compose-frontend-build.yml build $(DC_BUILD_ARGS)
+
+
+build-dir:
+	@if [ ! -d "$(BUILD_DIR)" ] ; then mkdir -p $(BUILD_DIR) ; fi
+
+$(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION): build-dir
+	@$(COMPOSE) -f docker-compose-frontend-build.yml run -T frontend-build sh -c "npm run build > /dev/null 2>&1 && tar czf - public -C /app" > $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION)
+
 ##############
 #  GENERAL   #
 ##############
 
 dev: frontend-dev backend-dev nginx-dev
-down: frontend-down backend-down nginx-down
+down: frontend-down backend-down nginx-dev-down
+
+up: backend nginx
+stop: backend-down nginx-down
