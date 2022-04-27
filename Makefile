@@ -95,7 +95,7 @@ backend:
 	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d
 
 test:
-	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml  run  --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
+	$(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml run --rm --name=${APP} backend /bin/sh -c 'pip3 install pytest && pytest tests/ -s'
 
 test-rstp: up-vlc-server
 	@echo "Vlc rtsp server is running : open rtsp://localhost:$(RTSP_PORT)/test.sdp"
