@@ -7,17 +7,17 @@ server {
   server_name  localhost;
 
 
-  location /demo {
-      alias /usr/share/nginx/html/;
+  location /full {
+      alias /usr/share/nginx/html/full/;
       try_files $uri $uri/ /index.html$is_args$args;
     }
 
-  location /xprotect {
-      alias /usr/share/nginx/html/xprotect/;
+  location /light {
+      alias /usr/share/nginx/html/light/;
       try_files $uri $uri/ /index.html$is_args$args;
     }
 
-  location /api {
+  location /api/ {
       proxy_pass http://backend/;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;

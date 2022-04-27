@@ -96,7 +96,7 @@ backend-dev: network
 	@echo "Listening on port: $(BACKEND_PORT)"
 	@export COMMAND_PARAMS=/start-reload.sh; $(COMPOSE) -f docker-compose.yml -f docker-compose-dev.yml up -d $(DC_UP_ARGS)
 
-backend:
+backend-prod:
 	@echo "Listening on port: $(BACKEND_PORT)"
 	@export COMMAND_PARAMS=/start.sh; $(COMPOSE) -f docker-compose.yml up -d $(DC_UP_ARGS)
 
@@ -116,6 +116,10 @@ backend-down:
 ##############
 #  FRONTEND  #
 ##############
+
+frontend-dev-build:
+	@echo "Build frontend"
+	@$(COMPOSE) -f docker-compose-frontend-dev.yml build $(DC_BUILD_ARGS)
 
 frontend-dev:
 	@echo "Listening on port: $(FRONTEND_PORT)"
@@ -141,10 +145,10 @@ nginx-dev-exec:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml exec nginx-dev bash
 nginx-dev-down:
 	@$(COMPOSE) -f docker-compose-nginx-dev.yml down
-	nginx-dev: network
-		@$(COMPOSE) -f docker-compose-nginx.yml up -d $(DC_UP_ARGS)
-nginx: network
+nginx-prod: network
 	@$(COMPOSE) -f docker-compose-nginx.yml up -d $(DC_UP_ARGS)
+nginx-down:
+	@$(COMPOSE) -f docker-compose-nginx.yml down
 nginx-dev-exec:
 	@$(COMPOSE) -f docker-compose-nginx.yml exec nginx bash
 ##############
@@ -192,5 +196,5 @@ $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION): build-dir
 dev: frontend-dev backend-dev nginx-dev
 down: frontend-down backend-down nginx-dev-down
 
-up: backend nginx
+up: backend-prod nginx-prod
 stop: backend-down nginx-down
