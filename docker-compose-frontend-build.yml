@@ -1,0 +1,23 @@
+version: '3.4'
+services:
+  frontend-build:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      target: build
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+    image: datalab-mi/${APP}-frontend-build:${APP_VERSION}
+    container_name: frontend-build
+    environment:
+      - http_proxy
+      - https_proxy
+      - no_proxy
+      - APP_VERSION=${APP_VERSION}
+
+networks:
+  default:
+    external:
+      name: ${DC_NETWORK}
