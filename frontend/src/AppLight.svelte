@@ -40,7 +40,7 @@
 	{#if nbPerson !== undefined }
 		<h2> {nbPerson} {nbPerson <= 1 ? 'personne' : 'personnes'}</h2>
 	{/if}
-	<Display bind:this={display} {density} {detection}/>
+	<Display bind:this={display} {density} {detection} writeCount={false}/>
 </main>
 
 

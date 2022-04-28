@@ -32,6 +32,7 @@
 	let detection=true; // If detection bboxes is needed
 	let fusion=true; // The model type
 
+	let densityOp=0.6;
 	let isSubmit=false;
 
 	let nbPerson;
@@ -69,7 +70,7 @@
 		{/each}
 	</select>
 
-	<button type=submit>
+	<button type=submit style={`background-color:${isSubmit? 'red':'green'}`}>
 		{@html isSubmit? "Stop" : "Go"}
 	</button>
 </form>
@@ -99,6 +100,11 @@
 	<input type=checkbox bind:checked={density}>
 	Display density map
 </label>
+{#if density}
+	<label>
+		Opacity : {densityOp} <input type=range bind:value={densityOp} min=0 max=1 step=0.1 style='vertical-align: middle;'>
+	</label>
+{/if}
 
 <label>
 	<input type=checkbox bind:checked={detection}>
@@ -109,10 +115,13 @@
 	<input type=checkbox bind:checked={fusion}>
 	Fuse detection and count model
 </label>
+
+
+
 </aside>
 
 <main>
-	<Display bind:this={display} {density} {detection}/>
+	<Display bind:this={display} {density} {detection} {densityOp}/>
 </main>
 
 </div>
@@ -145,6 +154,7 @@
 	  flex: 1 100%;
 	}
 	.aside-1 {
+		text-align: left;
 	  background: white;
 		max-width: 20%;
 		min-width: 0;

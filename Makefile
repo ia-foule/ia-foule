@@ -2,7 +2,7 @@ SHELL = /bin/bash
 
 export CURRENT_PATH := $(shell pwd)
 export APP = ia-foule
-export APP_VERSION := 1.0
+export APP_VERSION := 1.1
 # this is usefull with most python apps in dev mode because if stdout is
 # buffered logs do not shows in realtime
 export PYTHONUNBUFFERED=1
