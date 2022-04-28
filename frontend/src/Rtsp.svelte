@@ -36,7 +36,7 @@ const startCounting = () => {
           nbPerson = result.nb_person_counted
         }
         if (density === true && result.hasOwnProperty("url")) {
-          display.drawDensity('data:imasge/png;base64,' + result.url,
+          display.drawDensity('data:image/png;base64,' + result.url,
             result.nb_person_counted || result.nb_person)
         }
         if (detection === true  && result.hasOwnProperty("bboxes")) {
