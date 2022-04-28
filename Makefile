@@ -90,7 +90,7 @@ make download-models: $(MODEL_PATH)/mmcn $(MODEL_PATH)/dsnet $(MODEL_PATH)/mobil
 #############
 
 backend-build:
-	@$(COMPOSE) -f  docker-compose.yml build
+	@$(COMPOSE) -f  docker-compose.yml build $(DC_BUILD_ARGS)
 
 backend-dev: network
 	@echo "Listening on port: $(BACKEND_PORT)"
@@ -169,7 +169,7 @@ vlc-server-down:
 ###############
 # BUILD STAGE #
 ###############
-build: frontend-build nginx-build
+build: frontend-build nginx-build backend-build
 
 frontend-build: network frontend-build-dist $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION)
 
