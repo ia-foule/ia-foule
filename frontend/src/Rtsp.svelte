@@ -28,9 +28,12 @@ const startCounting = () => {
         display.drawFromImg(URL.createObjectURL( event.data ))
         URL.revokeObjectURL(event.data)
       } else {
+        // Parse message
         const result = JSON.parse(event.data)
-        if (result.hasOwnProperty("nb_person")) {
+        if (result.hasOwnProperty("nb_person") && fusion ) {
           nbPerson = result.nb_person
+        } else if (result.hasOwnProperty("nb_person_counted") && !fusion ) {
+          nbPerson = result.nb_person_counted
         }
         if (density === true && result.hasOwnProperty("url")) {
           display.drawDensity('data:imasge/png;base64,' + result.url,
