@@ -2,7 +2,7 @@ SHELL = /bin/bash
 
 export CURRENT_PATH := $(shell pwd)
 export APP = ia-foule
-export APP_VERSION := 1.0
+export APP_VERSION := 1.1
 # this is usefull with most python apps in dev mode because if stdout is
 # buffered logs do not shows in realtime
 export PYTHONUNBUFFERED=1
@@ -90,7 +90,7 @@ make download-models: $(MODEL_PATH)/mmcn $(MODEL_PATH)/dsnet $(MODEL_PATH)/mobil
 #############
 
 backend-build:
-	@$(COMPOSE) -f  docker-compose.yml build
+	@$(COMPOSE) -f  docker-compose.yml build $(DC_BUILD_ARGS)
 
 backend-dev: network
 	@echo "Listening on port: $(BACKEND_PORT)"
@@ -169,7 +169,7 @@ vlc-server-down:
 ###############
 # BUILD STAGE #
 ###############
-build: frontend-build nginx-build
+build: frontend-build nginx-build backend-build
 
 frontend-build: network frontend-build-dist $(BUILD_DIR)/$(FILE_FRONTEND_DIST_APP_VERSION)
 

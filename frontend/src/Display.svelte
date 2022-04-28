@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from 'svelte';
   export let detection;
   export let density;
+  export let densityOp=0.6;
+  export let writeCount=true;
   $: console.log('density : ' + density);
   // Input Image
   let canvasI;
@@ -75,11 +77,15 @@
   export function drawDensity(url, nbPerson) {
     ctxD.clearRect(0, 0, canvasD.width, canvasD.height)
     const callback = () => {
-      ctxD.font = '35px serif';
+      ctxD.font = 'bold 35px serif';
       ctxD.fillStyle = "red";
-      ctxD.fillText(nbPerson + (nbPerson <= 1 ? ' personne' : ' personnes'), 10, canvasD.height - 10);
+      ctxD.fillText(nbPerson + (nbPerson <= 1 ? ' personne' : ' personnes'),  canvasD.width - 300, 50);
     }
-    draw(url, ctxD, canvasD, callback)
+    if (writeCount) {
+      draw(url, ctxD, canvasD, callback)
+    } else {
+      draw(url, ctxD, canvasD)
+    }
   }
 
   export function adjust(dx, dy) {
@@ -103,9 +109,12 @@
       var h = (bbox['y2'] - bbox['y1']) * scale
       ctxB.strokeRect(x, y, w, h);
     })
-    ctxB.font = '35px serif';
-    ctxB.fillStyle = "green";
-    ctxB.fillText(bboxes.length + (bboxes.length <= 1 ? ' personne' : ' personnes'), 10, 50);
+
+    if (writeCount) {
+      ctxB.font = 'bold 35px serif';
+      ctxB.fillStyle = "green";
+      ctxB.fillText(bboxes.length + (bboxes.length <= 1 ? ' personne' : ' personnes'), 10, 50);
+    }
   }
   // *** Wrappers of html methods to avoid to export it  ***
 
@@ -127,7 +136,7 @@
     class="image density"
     width="1000" height="600"
     bind:this={canvasD}
-    style="visibility: {density===true ? 'visible':'hidden'}">
+    style="visibility: {density===true ? 'visible':'hidden'}; --densityOp: {densityOp}">
   </canvas>
 
   <canvas
@@ -157,7 +166,7 @@
 
   .density {
     z-index: 1;
-    opacity:0.6;
+    opacity: var(--densityOp);
     }
 
   .bbox {
