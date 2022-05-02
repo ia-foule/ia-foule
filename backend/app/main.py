@@ -43,7 +43,7 @@ async def detect(websocket: WebSocket, density=False, detection=False):
     while True:
         await asyncio.sleep(0.1)
         st_mtime_ns = p.stat().st_mtime_ns
-        print(st_mtime_ns)
+        #print(st_mtime_ns)
         if st_mtime_ns > st_mtime_ns_read:
             st_mtime_ns_read = st_mtime_ns
             await websocket.send_bytes(p.read_bytes())
