@@ -58,14 +58,14 @@ def process_frame(frame):
     p = Path('/tmp/result.json')
     with p.open('w') as fp:
         json.dump(result, fp)
-    print("save bboxes")
+    #print("save bboxes")
     return frame
 
 def write_frame(frame):
     p = Path('/tmp/frame.bin')
     img_byte_arr = io.BytesIO()
     frame.save(img_byte_arr, format='jpeg')
-    print('save frame')
+    #print('save frame')
     p.write_bytes(img_byte_arr.getvalue())
 
 if __name__ == '__main__':
@@ -83,5 +83,5 @@ if __name__ == '__main__':
         if (in_frame is not None) and (nb_frame % nb_frame_modulo == 0):
             out_frame = process_frame(in_frame)
             write_frame(out_frame)
-            print('new frame')
+            #print('new frame')
     process.wait()
