@@ -15,21 +15,22 @@ services:
      - no_proxy
      - PORT=${BACKEND_PORT}
      - PYTHONUNBUFFERED
-     - RTSP_ADDR=${RTSP_ADDR}
+     - RTSP_ADDR
      - MODEL_NAME_MOBILECOUNT
      - MODEL_NAME_DSNET
      - MODEL_NAME_MMCN
      - MODEL_TYPE
      - MODEL_TYPE_DETECTOR
      - FRAME_RATE
+     - WEB_CONCURRENCY=1
     command: ${COMMAND_PARAMS}
     volumes: # Add tmpfs filesystem to store rtsp image
-      - type: tmpfs
-        target: /tmp
-        tmpfs:
-          size: 21474836 #20Mo
-          #mode: 700 # paranoid mode, acces to docker user only
-      - ./models:/models/
+     - type: tmpfs
+       target: /tmp
+       tmpfs:
+         size: 21474836 #20Mo
+         #mode: 700 # paranoid mode, acces to docker user only
+     - ${MODEL_PATH}:/models
 networks:
   default:
     external:

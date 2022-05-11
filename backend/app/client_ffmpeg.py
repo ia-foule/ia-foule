@@ -70,7 +70,7 @@ def write_frame(frame):
 
 if __name__ == '__main__':
     RTSP_ADDR = os.getenv("RTSP_ADDR")
-    print(RTSP_ADDR)
+    print("Read : %s."%RTSP_ADDR)
     frame_rate =  int(os.getenv("FRAME_RATE", 1))
     width, height, fps = get_video_size(RTSP_ADDR)
     print(frame_rate, fps )

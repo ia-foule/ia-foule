@@ -38,6 +38,7 @@ export FILE_FRONTEND_DIST_APP_VERSION = $(APP)-$(APP_VERSION)-frontend-dist.tar.
 # DATA AND MODELS
 export OVH_BUCKET = https://storage.gra.cloud.ovh.net/v1/AUTH_df731a99a3264215b973b3dee70a57af/share
 export MODEL_NAME_MOBILECOUNT = mobilecount_shtechBv11_da_ri.onnx
+export MODEL_NAME_MOBILECOUNT = mobilecount_20220422.onnx
 export MODEL_NAME_DSNET = dsnet_shtechBv11_da_ri.onnx
 export MODEL_NAME_MMCN = mcnn_shtechB_194v11_da_ri.onnx
 export MODEL_NAME_DETECTOR = faster_rcnn_r50_fpn_1x_coco_20200130-047c8118_s.onnx
@@ -75,7 +76,7 @@ $(MODEL_PATH)/dsnet:
 	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P $(MODEL_PATH)/dsnet
 $(MODEL_PATH)/mobilecount:
 		mkdir -p $(MODEL_PATH)/mobilecount/
-		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P $(MODEL_PATH)/mobilecount
+		wget $(OVH_BUCKET)/models/$(MODEL_NAME_MOBILECOUNT) -P $(MODEL_PATH)/mobilecount
 $(MODEL_PATH)/faster_rcnn:
 		mkdir -p $(MODEL_PATH)/faster_rcnn/
 		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P $(MODEL_PATH)/faster_rcnn
