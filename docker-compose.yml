@@ -3,6 +3,7 @@ services:
    backend:
     image: datalab-mi/${APP}-backend
     container_name: backend
+    restart: always
     build:
       context: backend
       dockerfile: Dockerfile
@@ -30,6 +31,11 @@ services:
           size: 21474836 #20Mo
           #mode: 700 # paranoid mode, acces to docker user only
       - ./models:/models/
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+            max-file: "5"
 networks:
   default:
     external:

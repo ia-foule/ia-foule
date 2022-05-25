@@ -2,6 +2,7 @@ version: '3.4'
 services:
   nginx:
     image: datalab-mi/nginx-dev:${APP_VERSION}
+    restart: always
     build:
       context: nginx
       target: production
