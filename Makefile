@@ -69,16 +69,16 @@ network:
 
 $(MODEL_PATH)/mmcn:
 	mkdir -p $(MODEL_PATH)/mmcn/
-	wget $(OVH_BUCKET)/$(MODEL_NAME_MMCN) -P $(MODEL_PATH)/mmcn
+	wget $(OVH_BUCKET)/models/$(MODEL_NAME_MMCN) -P $(MODEL_PATH)/mmcn
 $(MODEL_PATH)/dsnet:
 	mkdir -p $(MODEL_PATH)/dsnet/
-	wget $(OVH_BUCKET)/$(MODEL_NAME_DSNET) -P $(MODEL_PATH)/dsnet
+	wget $(OVH_BUCKET)/models/$(MODEL_NAME_DSNET) -P $(MODEL_PATH)/dsnet
 $(MODEL_PATH)/mobilecount:
 		mkdir -p $(MODEL_PATH)/mobilecount/
-		wget $(OVH_BUCKET)/$(MODEL_NAME_MOBILECOUNT) -P $(MODEL_PATH)/mobilecount
+		wget $(OVH_BUCKET)/models/$(MODEL_NAME_MOBILECOUNT) -P $(MODEL_PATH)/mobilecount
 $(MODEL_PATH)/faster_rcnn:
 		mkdir -p $(MODEL_PATH)/faster_rcnn/
-		wget $(OVH_BUCKET)/$(MODEL_NAME_DETECTOR) -P $(MODEL_PATH)/faster_rcnn
+		wget $(OVH_BUCKET)/models/$(MODEL_NAME_DETECTOR) -P $(MODEL_PATH)/faster_rcnn
 $(MODEL_PATH)/yolov3:
 		mkdir -p $(MODEL_PATH)/yolov3/
 		wget $(OVH_BUCKET)/models/yolov3-10.onnx -P $(MODEL_PATH)/yolov3
