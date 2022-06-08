@@ -30,7 +30,7 @@ services:
         tmpfs:
           size: 21474836 #20Mo
           #mode: 700 # paranoid mode, acces to docker user only
-      - ./models:/models/
+      - ${MODEL_PATH}:/models/
     logging:
         driver: "json-file"
         options:
