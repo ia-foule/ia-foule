@@ -7,7 +7,7 @@ def test_predict():
     img_path = Path(__file__).resolve().parent / 'data/IMG_1.jpg'
     img = Image.open(img_path)
     t1 = time.time()
-    result, _ = predict(img)
+    result, _, _ = predict(img)
     exec_time = time.time() - t1
     print("execution time: %s"%exec_time)
-    assert result == 15
+    assert 15 < result < 20

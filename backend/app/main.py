@@ -112,30 +112,7 @@ async def predict_on_image(density: bool = False,
         content = await file.read()
         img = Image.open(io.BytesIO(content))
         img = img.convert('RGB')
-        if fusion:
-            nb_person, density_map, bboxes = predict_fusion(img)
-            result = {
-                    'nb_person' : nb_person,
-                    'nb_person_counted': int(density_map.sum()),
-                    'url': array2url(density_map),
-                    'bboxes':bboxes,
-                    'width': img.size[0],
-                    'height': img.size[1]
-                    }
-            return result
-        # Prepare result
-        result = {}
-        if not density:
-            nb_person, _ = predict_count(img)
-            result.update({'nb_person': nb_person})
-        else:
-            nb_person, density_map = predict_count(img)
-            url = array2url(density_map)
-            result.update({'nb_person': nb_person, 'url': url})
-        if detection:
-            bboxes = predict_detect(img)
-            result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
-        return result
+        return make_response(img, density, detection, fusion)
 
     else:
         raise HTTPException(status_code=422, detail='Not an image')
@@ -149,31 +126,8 @@ async def predict_on_url(url: str,
     try:
         resp = requests.get(url, headers={'User-Agent': user_agent})
         img = Image.open(io.BytesIO(resp.content))
-        if fusion:
-            nb_person, density_map, bboxes = predict_fusion(img)
-            result = {
-                    'nb_person' : nb_person,
-                    'nb_person_counted': int(density_map.sum()),
-                    'url': array2url(density_map),
-                    'bboxes':bboxes,
-                    'width': img.size[0],
-                    'height': img.size[1]
-                    }
-            return result
-        # Prepare result
-        result = {}
-        if not density:
-            nb_person, _ = predict_count(img)
-            result.update({'nb_person': nb_person})
-        else:
-            nb_person, density_map = predict_count(img)
-            url = array2url(density_map)
-            result.update({'nb_person': nb_person, 'url': url})
-        if detection:
-            bboxes = predict_detect(img)
-            result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
-        return result
-
+        img = img.convert('RGB')
+        return make_response(img, density, detection, fusion)
     except Exception as e:
         raise HTTPException(status_code=400, detail=e)
 

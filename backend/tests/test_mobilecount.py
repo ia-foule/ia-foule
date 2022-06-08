@@ -9,5 +9,5 @@ def test_predict():
     nb_person, _ = predict(img)
     exec_time = time.time() - t1
     print("execution time: %s"%exec_time)
-    assert nb_person == 20
+    assert nb_person == 21
     assert exec_time < 1, 'take more than 4 seconds! '
