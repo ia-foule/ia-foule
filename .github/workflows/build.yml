@@ -20,6 +20,8 @@ jobs:
     if: ( contains(needs.check-files-modified.outputs.changed_files, 'backend/') )
     steps:
     - uses: actions/checkout@v2
+    - name: download models
+      run: make download-models
     - name: Build docker image for tests
       run: make backend-dev
     - name: Run tests
