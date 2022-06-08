@@ -7,8 +7,16 @@ export let display;
 export let density;
 export let detection;
 export let fusion;
+export let frameRate;
+
 let video;
 let socket;
+
+let frameCount = frameRate + 1;
+console.log(frameCount);
+let ignore = false; // Ignore new frame depending on frameRate
+// TODO : The ffmpeg decoder should take in account directly the frame rate
+const pass = () => {}
 const PING_INTERVAL_MS = 5000; // Ping every 0.5s
 
 const startCounting = () => {
@@ -21,13 +29,17 @@ const startCounting = () => {
     }, PING_INTERVAL_MS);
     });
 
-    // Listen for messages
-    socket.addEventListener('message', function (event) {
-      console.log('ws message')
+  // Listen for messages
+  socket.addEventListener('message', function (event) {
+    console.log('ws message')
+    if (frameCount < frameRate) {
+      frameCount = frameCount + 1
+    } else {
       if (event.data instanceof Blob) {
         display.drawFromImg(URL.createObjectURL( event.data ))
         URL.revokeObjectURL(event.data)
       } else {
+        frameCount = 0
         // Parse message
         const result = JSON.parse(event.data)
         if (result.hasOwnProperty("nb_person") && fusion ) {
@@ -43,7 +55,8 @@ const startCounting = () => {
           display.drawBox(result.bboxes, result.width, result.height)
         }
       }
-    });
+    }
+  });
 
   // Stop the interval and video reading on close
   socket.addEventListener('close', function () {

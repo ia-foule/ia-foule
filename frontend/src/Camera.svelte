@@ -11,14 +11,16 @@ export let detection;
 // boolean parameter to fuse detection and count model
 export let fusion;
 
+export let frameRate;
+
 let video;
 let socket;
 
 console.log('start stream!');
-const IMAGE_INTERVAL_MS = 42;
+const IMAGE_INTERVAL_MS = 42 * 5;
 
 const startCounting = (video, deviceId) => {
-  socket = new WebSocket('ws://localhost/api/video-browser');
+  socket = new WebSocket(`ws://localhost/api/video-browser?density=${density}&detection=${detection}&fusion=${fusion}`);
   let intervalId;
 
   // Connection opened
@@ -32,7 +34,7 @@ const startCounting = (video, deviceId) => {
         width: { max: 640 },
         height: { max: 480 },
       },
-    }).then(function (stream) {
+    }).then((stream) => {
       video.srcObject = stream;
       video.play().then(() => {
         // Send an image in the WebSocket every 42 ms
@@ -43,17 +45,29 @@ const startCounting = (video, deviceId) => {
           // Convert it to JPEG and send it to the WebSocket
           display.toBlob((blob) => socket.send(blob), 'image/jpeg');
 
-        }, IMAGE_INTERVAL_MS);
+        }, IMAGE_INTERVAL_MS * frameRate);
       });
     });
   });
 
   // Listen for messages
   socket.addEventListener('message', function (event) {
-    nbPerson = event.data;
-    console.log(nbPerson)
+    console.log('ws message')
+      // Parse message
+      const result = JSON.parse(event.data)
+      if (result.hasOwnProperty("nb_person") && fusion ) {
+        nbPerson = result.nb_person
+      } else if (result.hasOwnProperty("nb_person_counted") && !fusion ) {
+        nbPerson = result.nb_person_counted
+      }
+      if (density === true && result.hasOwnProperty("url")) {
+        display.drawDensity('data:image/png;base64,' + result.url,
+          result.nb_person_counted || result.nb_person)
+      }
+      if (detection === true  && result.hasOwnProperty("bboxes")) {
+        display.drawBox(result.bboxes, result.width, result.height)
+      }
   });
-
   // Stop the interval and video reading on close
   socket.addEventListener('close', function () {
     window.clearInterval(intervalId);

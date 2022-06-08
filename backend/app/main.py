@@ -76,19 +76,20 @@ async def receive_for_browser(websocket: WebSocket, queue: asyncio.Queue):
     except asyncio.QueueFull:
         pass
 
-async def detect_for_browser(websocket: WebSocket, queue: asyncio.Queue):
+async def detect_for_browser(websocket: WebSocket, queue: asyncio.Queue, density, detection, fusion):
     while True:
         bytes = await queue.get()
         img = Image.open(io.BytesIO(bytes))
-        nb_person = predict_count(img)
-        await websocket.send_text(str(nb_person))
+        img = img.convert('RGB')
+        result = make_response(img, density, detection, fusion)
+        await websocket.send_json(result)
         queue.task_done()
 
 @app.websocket("/video-browser")
-async def video_browser(websocket: WebSocket):
+async def video_browser(websocket: WebSocket, density: bool = False, detection: bool = False, fusion: bool = False):
     await websocket.accept()
     queue: asyncio.Queue = asyncio.Queue(maxsize=10)
-    detect_task = asyncio.create_task(detect_for_browser(websocket, queue))
+    detect_task = asyncio.create_task(detect_for_browser(websocket, queue, density, detection, fusion))
     try:
         while True:
             await receive_for_browser(websocket, queue)
@@ -179,3 +180,32 @@ async def predict_on_url(url: str,
 @app.on_event("startup")
 async def startup():
     pass
+
+
+def make_response(img: Image, density=True, detection=False, fusion=False):
+    """ Make response for the frontend
+    """
+    if fusion:
+        nb_person, density_map, bboxes = predict_fusion(img)
+        result = {
+                'nb_person' : nb_person,
+                'nb_person_counted': int(density_map.sum()),
+                'url': array2url(density_map),
+                'bboxes':bboxes,
+                'width': img.size[0],
+                'height': img.size[1]
+                }
+        return result
+    # Prepare result
+    result = {}
+    if not density:
+        nb_person, _ = predict_count(img)
+        result.update({'nb_person': nb_person})
+    else:
+        nb_person, density_map = predict_count(img)
+        url = array2url(density_map)
+        result.update({'nb_person': nb_person, 'url': url})
+    if detection:
+        bboxes = predict_detect(img)
+        result.update({'bboxes':bboxes, 'width': img.size[0], 'height': img.size[1]})
+    return result
