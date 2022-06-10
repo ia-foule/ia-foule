@@ -8,7 +8,6 @@ services:
       - ./imgs:/imgs/
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
-      - "8080:8080"
     #devices:
     #  - "/dev/video0:/dev/video0"
     environment:

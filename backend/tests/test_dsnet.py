@@ -10,4 +10,4 @@ def test_predict():
     exec_time = time.time() - t1
     print("execution time: %s"%exec_time)
     assert nb_person == 19
-    assert exec_time < 4, 'take more than 4 seconds! '
+    assert exec_time < 10, 'take more than 10 seconds! '

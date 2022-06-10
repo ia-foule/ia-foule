@@ -29,12 +29,13 @@
 
 	let selected;
 	let density=true; // If density map is needed
-	let detection=true; // If detection bboxes is needed
-	let fusion=true; // The model type
+	let detection=false; // If detection bboxes is needed
+	let fusion=false; // The model type
 
 	let densityOp=0.6;
 	let isSubmit=false;
 
+	let frameRate = 1 // The number of frame to display
 	let nbPerson;
 
 	let display; // the display component where result image is drawn
@@ -77,15 +78,15 @@
 
 {#if isSubmit === true }
 	{#if selected.class === 'Image'}
-		<Image bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
+		<Image bind:nbPerson {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'Camera' }
-		<Camera deviceId={selected.id} bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
+		<Camera bind:nbPerson deviceId={selected.id} {display} {density} {detection} {fusion} {frameRate}/>
 	{:else if selected.class === 'Video' }
-		<Video  bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
+		<Video  bind:nbPerson {display} {density} {detection} {fusion}/>
 	{:else if selected.class === 'VideoServer' }
-		<VideoServer bind:nbPerson={nbPerson} {display}/>
+		<VideoServer bind:nbPerson {display}/>
 	{:else if selected.class === 'Rtsp' }
-		<Rtsp bind:nbPerson={nbPerson} {display} {density} {detection} {fusion}/>
+		<Rtsp bind:nbPerson {display} {density} {detection} {fusion} {frameRate}/>
 	{/if}
 
 {/if}
@@ -116,6 +117,10 @@
 	Fuse detection and count model
 </label>
 
+
+	<label>
+		Frame rate: 1/{frameRate} <input type=range bind:value={frameRate} min=1 max=10 step=1 style='vertical-align: middle;'>
+	</label>
 
 
 </aside>
