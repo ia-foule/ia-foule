@@ -39,7 +39,7 @@ const startCounting = () => {
         display.drawFromImg(URL.createObjectURL( event.data ))
         URL.revokeObjectURL(event.data)
       } else {
-        frameCount = 0
+        frameCount = 1
         // Parse message
         const result = JSON.parse(event.data)
         if (result.hasOwnProperty("nb_person") && fusion ) {
